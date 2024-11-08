@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h2>Giriş Yap</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label for="username">Kullanıcı Adı</label>
+        <input type="text" name="username" required>
+
+        <label for="password">Parola</label>
+        <input type="password" name="password" required>
+
+        <button type="submit">Giriş Yap</button>
+    </form>
+
+    <p>Hesabınız yok mu? <a href="{% url 'signup' %}">Hesap oluşturun</a></p>
+    <p><a href="{% url 'password_reset' %}">Parolanızı mı unuttunuz?</a></p>
+</body>
+</html>
