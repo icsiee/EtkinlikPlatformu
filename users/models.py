@@ -7,7 +7,7 @@ class User(AbstractUser):
     name = models.CharField(max_length=50)
     surname = models.CharField(max_length=50)
     birth_date = models.DateField(null=True, blank=True)
-    gender = models.CharField(max_length=10, choices=[('M', 'Male'), ('F', 'Female')], null=True, blank=True)
+    gender = models.CharField(max_length=10, choices=[('K', 'Kadın'), ('E', 'Erkek')], null=True, blank=True)
     email = models.EmailField(unique=True)  # E-posta eşsiz olacak
     phone_number = models.CharField(max_length=15, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)

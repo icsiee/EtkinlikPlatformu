@@ -4,6 +4,7 @@
 
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import PasswordResetForm
+from django.contrib import messages
 
 
 # Giriş sayfası
@@ -71,12 +72,16 @@ def signup(request):
 # Kayıt sayfası
 def signup_view(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            return redirect('login')
+            form.save()  # Kaydı kaydet
+            messages.success(request, "Hesap başarıyla oluşturuldu!")
+            return redirect('login')  # Başarıyla kaydedildikten sonra giriş sayfasına yönlendir
+        else:
+            messages.error(request, "Hesap oluşturulamadı. Lütfen formu kontrol edin.")
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
+
     return render(request, 'users/signup.html', {'form': form})
 
 # Parola sıfırlama sayfası
@@ -99,3 +104,8 @@ def signup_view(request):
     else:
         form = CustomUserCreationForm()
     return render(request, 'users/signup.html', {'form': form})
+
+
+
+
+
