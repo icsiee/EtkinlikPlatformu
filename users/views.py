@@ -46,22 +46,27 @@ from .models import User  # User modelini import et
 
 
 # Giriş sayfası
+# Giriş sayfası
 def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
+        is_admin = 'is_admin' in request.POST  # Admin giriş checkbox'ının işaretli olup olmadığını kontrol et
 
-        # Admin kontrolü
-        if username == 'iclal' and password == '1234':
-            user = authenticate(request, username=username, password=password)
-            if user is not None and user.is_superuser:  # Eğer adminse
-                login(request, user)
-                return redirect('admin_dashboard')  # Admin paneline yönlendir
+        if is_admin:  # Eğer admin girişi yapılmak isteniyorsa
+            # Admin kontrolü
+            if username == 'iclal' and password == '1234':  # Admin kullanıcı adı ve şifresi
+                user = authenticate(request, username=username, password=password)
+                if user is not None and user.is_superuser:  # Eğer adminse
+                    login(request, user)
+                    return redirect('admin_dashboard')  # Admin paneline yönlendir
+                else:
+                    # Admin değilse veya geçersiz giriş
+                    return render(request, 'users/login.html', {'error': 'Geçersiz admin giriş bilgileri.'})
             else:
-                # Admin değilse veya geçersiz giriş
-                return render(request, 'users/login.html', {'error': 'Geçersiz giriş. Admin değil veya yanlış bilgi.'})
+                return render(request, 'users/login.html', {'error': 'Geçersiz admin kullanıcı adı veya şifre.'})
 
-        # Diğer kullanıcılar için normal giriş işlemi
+        # Admin checkbox işaretlenmemişse normal kullanıcı girişi
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
@@ -70,7 +75,6 @@ def login_view(request):
             return render(request, 'users/login.html', {'error': 'Geçersiz kullanıcı adı veya parola.'})
 
     return render(request, 'users/login.html')
-
 
 # Admin sayfası
 def admin_dashboard(request):
