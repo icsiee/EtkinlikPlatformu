@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Paneli</title>
+</head>
+<body>
+    <h2>Admin Paneline Hoş Geldiniz</h2>
+
+    <div style="display: flex;">
+        <!-- Kullanıcı Listesi Paneli -->
+        <div style="width: 30%; padding: 20px; border-right: 1px solid #ccc;">
+            <h3>Kullanıcı Listesi</h3>
+            <ul>
+                {% for user in users %}
+                    <li>{{ user.username }} ({{ user.email }})</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Admin'in kontrol edebileceği alan -->
+        <div style="flex-grow: 1; padding: 20px;">
+            <h3>Admin Kontrolleri</h3>
+            <p>Buraya admin kontrol alanlarını ekleyebilirsiniz.</p>
+        </div>
+    </div>
+</body>
+</html>

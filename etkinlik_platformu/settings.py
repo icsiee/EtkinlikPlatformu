@@ -58,7 +58,9 @@ ROOT_URLCONF = 'etkinlik_platformu.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / "templates",  # Tüm projenin template dizinini ekleyebilirsiniz
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -70,6 +72,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'etkinlik_platformu.wsgi.application'
 

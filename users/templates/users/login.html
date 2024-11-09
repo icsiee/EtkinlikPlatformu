@@ -1,20 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
+    <title>Giriş Yap</title>
 </head>
 <body>
     <h2>Giriş Yap</h2>
     <form method="post">
         {% csrf_token %}
+
         <label for="username">Kullanıcı Adı</label>
-        <input type="text" name="username" required>
+        <input type="text" id="username" name="username" required>
 
         <label for="password">Parola</label>
-        <input type="password" name="password" required>
+        <input type="password" id="password" name="password" required>
+
+        <!-- Admin giriş seçeneği -->
+        <label for="is_admin">Admin Girişi</label>
+        <input type="checkbox" id="is_admin" name="is_admin">
 
         <button type="submit">Giriş Yap</button>
     </form>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
 
     <p>Hesabınız yok mu? <a href="{% url 'signup' %}">Hesap oluşturun</a></p>
     <p><a href="{% url 'password_reset' %}">Parolanızı mı unuttunuz?</a></p>

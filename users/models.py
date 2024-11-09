@@ -1,7 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
+from django.contrib.auth import get_user_model
+from django.db.utils import IntegrityError
 
 # Kullanıcı modeli
 class User(AbstractUser):
@@ -64,3 +65,29 @@ class Points(models.Model):
     def __str__(self):
         return f"{self.user.username}: {self.score} points"
 
+
+User = get_user_model()
+
+# Admin kullanıcı ekleme fonksiyonu
+def create_admin():
+    try:
+        admin_user, created = User.objects.get_or_create(
+            username='admin',  # Sabit kullanıcı adı
+            defaults={
+                'is_superuser': True,
+                'is_staff': True,
+                'is_admin': True,
+                'email': 'admin@example.com',
+            }
+        )
+        if created:
+            admin_user.set_password('admin')  # Sabit parola
+            admin_user.save()
+            print("Admin kullanıcı başarıyla oluşturuldu.")
+        else:
+            print("Admin kullanıcı zaten mevcut.")
+    except IntegrityError:
+        print("Admin kullanıcı oluşturulurken bir hata oluştu.")
+
+
+# Bu fonksiyonu Django yönetici komutları ile tetikleyebilirsiniz.
