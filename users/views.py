@@ -47,26 +47,22 @@ from .models import User  # User modelini import et
 
 # Giriş sayfası
 # Giriş sayfası
+# Giriş sayfası
 def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
-        is_admin = 'is_admin' in request.POST  # Admin giriş checkbox'ının işaretli olup olmadığını kontrol et
 
-        if is_admin:  # Eğer admin girişi yapılmak isteniyorsa
-            # Admin kontrolü
-            if username == 'iclal' and password == '1234':  # Admin kullanıcı adı ve şifresi
-                user = authenticate(request, username=username, password=password)
-                if user is not None and user.is_superuser:  # Eğer adminse
-                    login(request, user)
-                    return redirect('admin_dashboard')  # Admin paneline yönlendir
-                else:
-                    # Admin değilse veya geçersiz giriş
-                    return render(request, 'users/login.html', {'error': 'Geçersiz admin giriş bilgileri.'})
+        # Admin girişini kontrol et
+        if username == 'iclal' and password == '1234':
+            user = authenticate(request, username=username, password=password)
+            if user is not None and user.is_superuser:  # Admin kontrolü
+                login(request, user)
+                return redirect('admin:index')  # Admin paneline yönlendir
             else:
-                return render(request, 'users/login.html', {'error': 'Geçersiz admin kullanıcı adı veya şifre.'})
+                return render(request, 'users/login.html', {'error': 'Geçersiz giriş.'})
 
-        # Admin checkbox işaretlenmemişse normal kullanıcı girişi
+        # Diğer kullanıcılar için normal giriş işlemi
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
@@ -76,13 +72,23 @@ def login_view(request):
 
     return render(request, 'users/login.html')
 
-# Admin sayfası
-def admin_dashboard(request):
-    users = User.objects.all()  # Tüm kullanıcıları çekiyoruz
-    return render(request, 'users/admin_dashboard.html', {'users': users})
+from django.shortcuts import render
+from .forms import CustomUserCreationForm
+from django.contrib.auth import get_user_model
 
 
+def signup(request):
+    form = CustomUserCreationForm(request.POST or None)
+    admin_user = get_user_model().objects.filter(is_superuser=True).first()
 
+    if form.is_valid():
+        form.save()
+        return redirect('login')  # Başarıyla kayıt olduktan sonra login sayfasına yönlendir
+
+    return render(request, 'signup.html', {
+        'form': form,
+        'admin_email': admin_user.email if admin_user else 'Admin not found'
+    })
 
 
 # Kayıt sayfası
