@@ -1,76 +1,53 @@
 # users/views.py
 
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+
+
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.shortcuts import get_current_site
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.forms import PasswordResetForm
-from django.shortcuts import render, redirect
-from .forms import CustomUserCreationForm
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
-from .models import User  # User modelini import et
 
 
 # Giriş sayfası
-# Giriş sayfası
-
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
-
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
-
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
-
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.shortcuts import get_current_site
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.contrib.auth.forms import PasswordResetForm
-from .forms import CustomUserCreationForm
-from django.contrib.auth.decorators import login_required
-from .models import User  # User modelini import et
+from django.contrib.auth import get_user_model
 
 
-# Giriş sayfası
-# Giriş sayfası
-# Giriş sayfası
 def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
+        is_admin_login = 'admin_login' in request.POST  # Admin login checkbox'ının işaretli olup olmadığını kontrol ediyoruz
 
-        # Admin girişini kontrol et
-        if username == 'iclal' and password == '1234':
-            user = authenticate(request, username=username, password=password)
-            if user is not None and user.is_superuser:  # Admin kontrolü
-                login(request, user)
-                return redirect('admin:index')  # Admin paneline yönlendir
+        # Admin Girişi Kontrolü
+        if is_admin_login:  # Admin giriş kontrolü
+            if username == 'iclal' and password == '1234':  # Admin kullanıcı adı ve şifresi kontrolü
+                user = authenticate(request, username=username, password=password)
+                if user is not None and user.is_superuser:
+                    login(request, user)
+                    return redirect('admin:index')  # Admin paneline yönlendir
+                else:
+                    return render(request, 'users/login.html', {'error': 'Geçersiz admin giriş bilgileri.'})
             else:
-                return render(request, 'users/login.html', {'error': 'Geçersiz giriş.'})
+                return render(request, 'users/login.html', {'error': 'Geçersiz admin kullanıcı adı veya şifre.'})
 
-        # Diğer kullanıcılar için normal giriş işlemi
+        # Normal Kullanıcı Girişi
+        if username == 'iclal' and password == '1234':  # Geçersiz kullanıcı adı ve şifresi kontrolü
+            return render(request, 'users/login.html', {'error': 'Bu kullanıcı adı ve şifre ile giriş yapılamaz.'})
+
         user = authenticate(request, username=username, password=password)
-        if user is not None:
+        if user is not None and not user.is_superuser:  # Admin değilse normal kullanıcı girişi
             login(request, user)
             return redirect('home')  # Kullanıcıyı ana sayfaya yönlendir
         else:
             return render(request, 'users/login.html', {'error': 'Geçersiz kullanıcı adı veya parola.'})
 
     return render(request, 'users/login.html')
+
 
 from django.shortcuts import render
 from .forms import CustomUserCreationForm

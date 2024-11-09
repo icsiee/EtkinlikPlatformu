@@ -5,7 +5,7 @@
 </head>
 <body>
     <h2>Giriş Yap</h2>
-    <form method="post">
+    <form method="POST">
         {% csrf_token %}
 
         <label for="username">Kullanıcı Adı</label>
@@ -15,8 +15,8 @@
         <input type="password" id="password" name="password" required>
 
         <!-- Admin giriş seçeneği -->
-        <label for="is_admin">Admin Girişi</label>
-        <input type="checkbox" id="is_admin" name="is_admin">
+        <label for="admin_login">Admin Girişi</label>
+        <input type="checkbox" id="admin_login" name="admin_login">
 
         <button type="submit">Giriş Yap</button>
     </form>
