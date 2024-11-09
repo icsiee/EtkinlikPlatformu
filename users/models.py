@@ -1,6 +1,13 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.contrib.auth import get_user_model
+
+# İlgi Alanları Modeli
+class Interest(models.Model):
+    name = models.CharField(max_length=100, unique=True)  # Her ilgi alanı eşsiz olacak
+    description = models.TextField()
+
+    def __str__(self):
+        return self.name
 
 # Kullanıcı modeli
 class User(AbstractUser):
@@ -12,17 +19,11 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
     is_admin = models.BooleanField(default=False)  # Yönetici yetkileri için
+    interests = models.ManyToManyField(Interest, blank=True)  # Many-to-many ilişki
 
     def __str__(self):
         return self.username
 
-# İlgi Alanları Modeli
-class Interest(models.Model):
-    name = models.CharField(max_length=100, unique=True)  # Her ilgi alanı eşsiz olacak
-    description = models.TextField()
-
-    def __str__(self):
-        return self.name
 
 # Etkinlik modeli
 class Event(models.Model):
@@ -47,6 +48,7 @@ class Participant(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.event.name}"
+
 
 # Mesaj modeli
 class Message(models.Model):

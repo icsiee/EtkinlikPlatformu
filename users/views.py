@@ -18,35 +18,41 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 
 
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
 def login_view(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        is_admin_login = 'admin_login' in request.POST  # Admin login checkbox'ının işaretli olup olmadığını kontrol ediyoruz
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        is_admin_login = 'admin_login' in request.POST  # Admin login checkbox'ını kontrol ediyoruz
 
         # Admin Girişi Kontrolü
         if is_admin_login:  # Admin giriş kontrolü
             if username == 'iclal' and password == '1234':  # Admin kullanıcı adı ve şifresi kontrolü
                 user = authenticate(request, username=username, password=password)
-                if user is not None and user.is_superuser:
+                if user is not None and user.is_superuser:  # Admin yetkisini kontrol et
                     login(request, user)
                     return redirect('admin:index')  # Admin paneline yönlendir
                 else:
-                    return render(request, 'users/login.html', {'error': 'Geçersiz admin giriş bilgileri.'})
+                    messages.error(request, 'Geçersiz admin giriş bilgileri.')
+                    return render(request, 'users/login.html')
+
             else:
-                return render(request, 'users/login.html', {'error': 'Geçersiz admin kullanıcı adı veya şifre.'})
+                messages.error(request, 'Geçersiz admin kullanıcı adı veya şifre.')
+                return render(request, 'users/login.html')
 
         # Normal Kullanıcı Girişi
-        if username == 'iclal' and password == '1234':  # Geçersiz kullanıcı adı ve şifresi kontrolü
-            return render(request, 'users/login.html', {'error': 'Bu kullanıcı adı ve şifre ile giriş yapılamaz.'})
-
         user = authenticate(request, username=username, password=password)
-        if user is not None and not user.is_superuser:  # Admin değilse normal kullanıcı girişi
+        if user is not None:
             login(request, user)
-            return redirect('home')  # Kullanıcıyı ana sayfaya yönlendir
+            return redirect('home')  # Ana sayfaya veya kullanıcı paneline yönlendir
         else:
-            return render(request, 'users/login.html', {'error': 'Geçersiz kullanıcı adı veya parola.'})
+            messages.error(request, 'Geçersiz kullanıcı adı veya şifre.')
+            return render(request, 'users/login.html')  # Hata mesajı ile giriş sayfasına dön
 
+    # GET isteği: Boş bir formla sayfa yüklenir
     return render(request, 'users/login.html')
 
 
@@ -105,6 +111,24 @@ def signup_view(request):
         form = CustomUserCreationForm()
     return render(request, 'users/signup.html', {'form': form})
 
+# views.py
+
+from django.shortcuts import render
+
+def user_dashboard(request):
+    if request.user.is_authenticated:
+        return render(request, 'users/user_dashboard.html')  # Kullanıcıya kişisel sayfayı göster
+    else:
+        return redirect('login')  # Eğer kullanıcı oturum açmamışsa login sayfasına yönlendir
+
+# views.py
+
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')  # Çıkış yapınca login sayfasına yönlendir
 
 
 

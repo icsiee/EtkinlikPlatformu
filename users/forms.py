@@ -47,3 +47,13 @@ class CustomUserCreationForm(forms.ModelForm):
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError("Bu e-posta adresi zaten kullanılıyor.")
         return email
+
+from django import forms
+from .models import User, Interest
+
+class UserInterestForm(forms.ModelForm):
+    interests = forms.ModelMultipleChoiceField(queryset=Interest.objects.all(), widget=forms.CheckboxSelectMultiple)
+
+    class Meta:
+        model = User
+        fields = ['interests']
