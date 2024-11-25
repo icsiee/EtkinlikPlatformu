@@ -30,6 +30,8 @@ ALLOWED_HOSTS = []
 AUTH_USER_MODEL = 'users.User'
 
 
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -59,9 +61,9 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            BASE_DIR / "templates",  # Tüm projenin template dizinini ekleyebilirsiniz
+            BASE_DIR / 'templates',  # Proje düzeyinde 'templates' klasörü
         ],
-        'APP_DIRS': True,
+        'APP_DIRS': True,  # Uygulamalar içinde 'templates' klasörü de aranır
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -72,6 +74,8 @@ TEMPLATES = [
         },
     },
 ]
+
+
 
 
 WSGI_APPLICATION = 'etkinlik_platformu.wsgi.application'

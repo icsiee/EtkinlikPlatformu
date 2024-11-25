@@ -1,15 +1,55 @@
-<!-- user_dashboard.html -->
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kullanıcı Arayüzü</title>
+    <title>Kullanıcı Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+        .dashboard-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+        }
+        .dashboard-panel {
+            width: 60%;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-    <h1>Hoş Geldiniz, {{ user.username }}!</h1>
-    <p>Bu sizin kişisel sayfanızdır.</p>
-    <p><a href="{% url 'logout' %}">Çıkış Yap</a></p>  <!-- Kullanıcı çıkış yapabilir -->
+
+    <h2>Hoşgeldiniz!</h2>
+
+    <div class="dashboard-container">
+        <div class="dashboard-panel">
+            {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <li class="success">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            <h3>Dashboard</h3>
+            <p>Burada etkinliklerinizi yönetebilirsiniz.</p>
+        </div>
+    </div>
+
 </body>
 </html>

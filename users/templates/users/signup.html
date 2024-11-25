@@ -1,26 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kayıt Ol</title>
 </head>
 <body>
-    <h2>Hesap Oluştur</h2>
-
-    <!-- Hata ve başarı mesajlarını görüntüleme -->
-    {% if messages %}
-        <ul>
-        {% for message in messages %}
-            <li>{{ message }}</li>
-        {% endfor %}
-        </ul>
-    {% endif %}
-
-    <form method="post" enctype="multipart/form-data">
+    <h2>Kayıt Ol</h2>
+    <form method="POST">
         {% csrf_token %}
-        {{ form.as_p }}  <!-- Formu otomatik olarak göster -->
+        {{ form.as_p }}
         <button type="submit">Kaydol</button>
     </form>
-
-    <p>Zaten bir hesabınız var mı? <a href="{% url 'login' %}">Giriş yapın</a></p>
 </body>
 </html>

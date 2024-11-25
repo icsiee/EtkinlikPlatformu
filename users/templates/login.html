@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Yap</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+        .login-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+        }
+        .login-panel {
+            width: 45%;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="password"], button {
+            display: block;
+            margin-bottom: 15px;
+            padding: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .form-footer {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h2>Giriş Yap</h2>
+
+    <div class="login-container">
+        <!-- Kullanıcı Girişi Paneli -->
+        <div class="login-panel">
+            <h3>Kullanıcı Girişi</h3>
+            <form method="POST" action="{% url 'login' %}">
+                {% csrf_token %}
+                <label for="username">Kullanıcı Adı</label>
+                <input type="text" id="username" name="username" required>
+
+                <label for="password">Parola</label>
+                <input type="password" id="password" name="password" required>
+
+                <button type="submit">Giriş Yap</button>
+            </form>
+            {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <li class="error">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <!-- Admin Girişi Paneli -->
+        <div class="login-panel">
+            <h3>Admin Girişi</h3>
+            <form method="POST" action="{% url 'admin_login' %}">
+                {% csrf_token %}
+                <label for="admin-username">Kullanıcı Adı</label>
+                <input type="text" id="admin-username" name="username" required>
+
+                <label for="admin-password">Parola</label>
+                <input type="password" id="admin-password" name="password" required>
+
+                <button type="submit">Admin Girişi Yap</button>
+            </form>
+
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="form-footer">
+        <p>Hesabınız yok mu? <a href="{% url 'signup' %}">Hesap oluşturun</a></p>
+        <p><a href="{% url 'password_reset' %}">Parolanızı mı unuttunuz?</a></p>
+    </div>
+</body>
+</html>
