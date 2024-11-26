@@ -4,7 +4,9 @@ from django.contrib import messages
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import csrf_exempt
-
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import User
+from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm
 
 User = get_user_model()
@@ -123,9 +125,51 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+@csrf_exempt
+
+def user_logout(request):
+    logout(request)
+    return redirect('user_login')  # Redirect to the login page after logout
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserChangeForm
+from django.contrib import messages
+
+
+
+# Get the custom user model
+User = get_user_model()
 
 @csrf_exempt
+# Admin Dashboard View - Lists all users
+@login_required
 def admin_dashboard(request):
-    return render(request, 'admin_dashboard.html')  # Admin paneli ekranı
+    if not request.user.is_staff:
+        return redirect('home')  # Eğer admin değilse, ana sayfaya yönlendir
+    users = User.objects.all()
+    return render(request, 'admin_dashboard.html', {'users': users})
 
+@csrf_exempt
 
+# Kullanıcı Düzenleme
+@login_required
+def edit_user(request, user_id):
+    if not request.user.is_staff:
+        return redirect('home')  # Eğer admin değilse, ana sayfaya yönlendir
+
+    user = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST':
+        user.username = request.POST['username']
+        user.email = request.POST['email']
+        user.is_active = request.POST['is_active'] == 'True'
+        user.save()
+        return redirect('admin_dashboard')
+
+    return render(request, 'edit_user.html', {'user': user})

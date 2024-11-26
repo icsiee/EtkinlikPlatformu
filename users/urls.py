@@ -10,5 +10,6 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),  # Çıkış yapma
     path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),  # Admin dashboard
     path('user_login/', views.user_login, name='user_login'),
-
+    path('edit_user/<int:user_id>/', views.edit_user, name='edit_user'),
+    # Other paths for logout, etc.
 ]
