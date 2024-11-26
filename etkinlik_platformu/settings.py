@@ -11,8 +11,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+from pathlib import Path
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -61,10 +64,8 @@ ROOT_URLCONF = 'etkinlik_platformu.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            BASE_DIR / 'templates',  # Proje düzeyinde 'templates' klasörü
-        ],
-        'APP_DIRS': True,  # Uygulamalar içinde 'templates' klasörü de aranır
+        'DIRS': [BASE_DIR / 'templates'],  # Proje düzeyinde 'templates' klasörü
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -75,6 +76,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 
 

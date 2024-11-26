@@ -63,19 +63,19 @@
         <!-- Kullanıcı Girişi Paneli -->
         <div class="login-panel">
             <h3>Kullanıcı Girişi</h3>
-<form method="POST" action="{% url 'user_login' %}">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="username">Kullanıcı Adı</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Şifre</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <button type="submit" class="btn">Giriş Yap</button>
-        </form>
-           {% if messages %}
+            <form method="post" action="{% url 'user_login' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username">Kullanıcı Adı</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Şifre</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn">Giriş Yap</button>
+            </form>
+            {% if messages %}
                 <ul>
                     {% for message in messages %}
                         <li class="error">{{ message }}</li>
@@ -89,12 +89,14 @@
             <h3>Admin Girişi</h3>
             <form method="POST" action="{% url 'admin_login' %}">
                 {% csrf_token %}
-                <label for="admin-username">Kullanıcı Adı</label>
-                <input type="text" id="admin-username" name="username" required>
-
-                <label for="admin-password">Parola</label>
-                <input type="password" id="admin-password" name="password" required>
-
+                <div class="form-group">
+                    <label for="admin-username">Kullanıcı Adı</label>
+                    <input type="text" id="admin-username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="admin-password">Parola</label>
+                    <input type="password" id="admin-password" name="password" required>
+                </div>
                 <button type="submit">Admin Girişi Yap</button>
             </form>
         </div>
