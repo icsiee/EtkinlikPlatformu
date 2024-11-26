@@ -27,7 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 # etkinlik_platformu/settings.py
-AUTH_USER_MODEL = 'users.User'
+# settings.py
+AUTH_USER_MODEL = 'users.User'  # Kendi modelinizi burada belirtin
 
 
 

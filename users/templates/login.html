@@ -63,17 +63,19 @@
         <!-- Kullanıcı Girişi Paneli -->
         <div class="login-panel">
             <h3>Kullanıcı Girişi</h3>
-            <form method="POST" action="{% url 'login' %}">
-                {% csrf_token %}
+<form method="POST" action="{% url 'user_login' %}">
+            {% csrf_token %}
+            <div class="form-group">
                 <label for="username">Kullanıcı Adı</label>
                 <input type="text" id="username" name="username" required>
-
-                <label for="password">Parola</label>
+            </div>
+            <div class="form-group">
+                <label for="password">Şifre</label>
                 <input type="password" id="password" name="password" required>
-
-                <button type="submit">Giriş Yap</button>
-            </form>
-            {% if messages %}
+            </div>
+            <button type="submit" class="btn">Giriş Yap</button>
+        </form>
+           {% if messages %}
                 <ul>
                     {% for message in messages %}
                         <li class="error">{{ message }}</li>
@@ -95,10 +97,6 @@
 
                 <button type="submit">Admin Girişi Yap</button>
             </form>
-
-            {% if error %}
-                <p class="error">{{ error }}</p>
-            {% endif %}
         </div>
     </div>
 

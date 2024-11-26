@@ -1,10 +1,16 @@
 from django.contrib.auth import authenticate, login, logout
-
 from django.contrib.auth.forms import PasswordResetForm
-from .forms import CustomUserCreationForm
 from users.models import User  # Kullanıcı modelini import edin
-
 from django.contrib.auth.models import BaseUserManager
+from .models import User
+from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+User = get_user_model()
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
 
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
@@ -24,6 +30,7 @@ class UserManager(BaseUserManager):
 
 
 from django.contrib.auth import get_user_model
+@csrf_exempt
 
 def authenticate(request, username=None, password=None):
     User = get_user_model()
@@ -34,6 +41,7 @@ def authenticate(request, username=None, password=None):
     except User.DoesNotExist:
         return None
 
+@csrf_exempt
 
 def admin_login(request):
     if request.method == 'POST':
@@ -44,24 +52,18 @@ def admin_login(request):
 
         if user is not None and user.is_superuser:  # Süper kullanıcıyı kontrol et
             login(request, user)
-            # Mesajları temizle
-            list(messages.get_messages(request))
             return redirect('admin:index')  # Admin paneline yönlendir
         else:
             messages.error(request, "Geçersiz kullanıcı adı veya şifre.")
             return render(request, 'admin_login.html')  # Hata mesajıyla giriş sayfasına geri dön
 
-    return render(request, 'admin_login.html')  # GET isteğinde giriş sayfasını göster
+@csrf_exempt
 
+def create_superuser(self, username, email, password=None, **extra_fields):
+    extra_fields.setdefault('is_staff', True)
+    extra_fields.setdefault('is_superuser', True)
 
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
-
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
-from .models import User
+    return self.create_user(username, email, password, **extra_fields)
 
 
 from django.contrib.auth import authenticate, login
@@ -71,33 +73,29 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 
-from django.contrib.auth.models import User
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from django.contrib.auth import login
+User = get_user_model()
 
+@csrf_exempt
 def user_login(request):
     if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
+        username = request.POST.get('username')
+        password = request.POST.get('password')
 
-        try:
-            # Kullanıcıyı veritabanından alıyoruz
-            user = User.objects.get(username=username)
+        # Kullanıcıyı doğrulama
+        user = authenticate(request, username=username, password=password)
 
-            # Kullanıcı varsa, şifreyi kontrol ediyoruz
-            if user.check_password(password):
-                # Şifre doğruysa giriş yap
-                login(request, user)
-                messages.success(request, f"Merhaba, {user.username}!")
-                return redirect('user_dashboard')  # Başarılı giriş sonrası yönlendirme
-            else:
-                # Şifre yanlışsa
-                messages.error(request, "Geçersiz kullanıcı adı veya şifre.")
-                return redirect('login')  # Hatalı girişte tekrar giriş sayfasına yönlendir
-        except User.DoesNotExist:
-            # Kullanıcı bulunamazsa
+        if user is not None:
+            # Eğer kullanıcı bir adminse (is_superuser = True), giriş yapmasına izin verme
+            if user.is_superuser:
+                messages.error(request, "Admin kullanıcıları giriş yapamaz.")
+                return redirect('login')  # Admin kullanıcısının girişini engelle
+
+            login(request, user)
+            return redirect('user_dashboard')  # Başarılı giriş sonrası kullanıcı paneline yönlendirme
+        else:
+            # Şifre yanlışsa hata mesajı göster
             messages.error(request, "Geçersiz kullanıcı adı veya şifre.")
             return redirect('login')  # Hatalı girişte tekrar giriş sayfasına yönlendir
 
@@ -108,70 +106,47 @@ def user_login(request):
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
+from .models import User
 
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
-
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
-from django.contrib import messages
+@csrf_exempt
 
 def login_view(request):
     if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
-
-        # Kullanıcıyı authenticate et
+        username = request.POST['username']
+        password = request.POST['password']
         user = authenticate(request, username=username, password=password)
-
         if user is not None:
-            login(request, user)  # Kullanıcıyı giriş yapmış say
-            messages.success(request, f"Merhaba, {user.username}!")
-            return redirect('user_dashboard')  # Giriş başarılı, dashboard'a yönlendir
+            login(request, user)
+            return redirect('user_dashboard')  # Giriş sonrası yönlendirme
         else:
-            messages.error(request, "Geçersiz kullanıcı adı veya şifre.")
-            return redirect('login')  # Hatalı girişte tekrar giriş sayfasına yönlendir
-
+            # Giriş başarısız olursa hata mesajı göster
+            return render(request, 'login.html', {'error': 'Geçersiz kullanıcı adı veya şifre'})
     return render(request, 'login.html')
-
-
-from django.shortcuts import render
+@csrf_exempt
 
 def user_dashboard(request):
     return render(request, 'user_dashboard.html')  # Kullanıcı panelini render et
 
 
 # Kayıt Olma Fonksiyonu
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserCreationForm
+
+from .forms import CustomUserCreationForm
+@csrf_exempt
 
 def signup_view(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        email = request.POST.get('email')
+        form = CustomUserCreationForm(request.POST, request.FILES)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])  # Şifreyi şifreli olarak kaydediyoruz
+            user.save()
+            messages.success(request, "Kayıt başarılı! Şimdi giriş yapabilirsiniz.")
+            return redirect('login')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'signup.html', {'form': form})
 
-        # Kullanıcı var mı diye kontrol et
-        if get_user_model().objects.filter(username=username).exists():
-            messages.error(request, "Bu kullanıcı adı zaten var.")
-            return redirect('signup')  # Hata durumunda tekrar kayıt sayfasına dön
-
-        # Yeni kullanıcıyı oluştur
-        user = get_user_model().objects.create_user(username=username, password=password, email=email)
-
-        # Kullanıcı kaydının başarılı olduğunu kontrol et
-        if user:
-            messages.success(request, f"Hoş geldiniz, {user.username}!")
-            return redirect('login')  # Başarıyla kaydedilen kullanıcıyı login sayfasına yönlendir
-        else:
-            messages.error(request, "Kayıt sırasında bir hata oluştu.")
-            return redirect('signup')  # Hata durumunda tekrar kayıt sayfasına dön
-
-    return render(request, 'signup.html')
-
+@csrf_exempt
 
 # Parola Sıfırlama Fonksiyonu
 def password_reset_view(request):
@@ -186,16 +161,23 @@ def password_reset_view(request):
 
     return render(request, 'users/password_reset.html', {'form': form})
 
+@csrf_exempt
 
 # Kullanıcı Dashboard
 def user_dashboard(request):
-    if request.user.is_authenticated:
-        return render(request, 'users/user_dashboard.html')
-    else:
-        return redirect('login')
+    return render(request, 'user_dashboard.html')  # User dashboard screen
 
+@csrf_exempt
 
 # Çıkış Yapma Fonksiyonu
 def logout_view(request):
     logout(request)
     return redirect('login')
+@csrf_exempt
+
+def admin_dashboard_view(request):
+    return render(request, 'admin_dashboard.html')  # Yönetici paneli ekranı
+@csrf_exempt
+
+def home_view(request):
+    return render(request, 'login.html')  # Kullanıcıların gördüğü ana ekran
