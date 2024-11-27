@@ -3,4 +3,11 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
   </component>
+=======
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+  </component>
+>>>>>>> 25b82ca294740f8a323c96a7ea3ac112eec07d98
 </project>

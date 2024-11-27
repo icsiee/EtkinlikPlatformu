@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Paneli</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        .sidebar {
+            width: 20%;
+            background-color: #343a40;
+            color: white;
+            padding: 20px;
+            height: 100vh;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #495057;
+        }
+        .sidebar a:hover {
+            background-color: #007bff;
+        }
+        .content {
+            width: 75%;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .content h2 {
+            color: #007bff;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #218838;
+        }
+        .footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Admin Paneli</h1>
+    </header>
+
+    <div class="container">
+        <!-- Sol Menü (Sidebar) -->
+        <div class="sidebar">
+            <a href="#">Anasayfa</a>
+            <a href="#">Kullanıcılar</a>
+<a href="{% url 'event_list' %}">Etkinlikler</a>
+            <a href="#">Ayarlar</a>
+<a href="{% url 'logout' %}">Çıkış Yap</a>
+        </div>
+
+        <!-- Ana İçerik Alanı -->
+        <div class="content">
+            <h2>Kullanıcı Yönetimi</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Kullanıcı Adı</th>
+                        <th>Email</th>
+                        <th>Durum</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.is_active|yesno:"Aktif,Pasif" }}</td>
+                        <td><a href="{% url 'edit_user' user.id %}" class="btn">Düzenle</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2024 Etkinlik Planlayıcı. Tüm hakları saklıdır.</p>
+    </div>
+
+</body>
+</html>

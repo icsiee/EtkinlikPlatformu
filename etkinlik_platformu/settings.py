@@ -11,8 +11,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+from pathlib import Path
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -27,7 +30,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 # etkinlik_platformu/settings.py
-AUTH_USER_MODEL = 'users.User'
+# settings.py
+AUTH_USER_MODEL = 'users.User'  # Kendi modelinizi burada belirtin
+
+
 
 
 # Application definition
@@ -59,7 +65,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            BASE_DIR / "templates",  # Tüm projenin template dizinini ekleyebilirsiniz
+            BASE_DIR / "templates",  # Proje genelindeki templates klasörü
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -72,6 +78,10 @@ TEMPLATES = [
         },
     },
 ]
+
+
+
+
 
 
 WSGI_APPLICATION = 'etkinlik_platformu.wsgi.application'
