@@ -1,0 +1,40 @@
+{% extends 'base_generic.html' %}
+
+{% block content %}
+<h2>Etkinlik Ekle</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div id="map" style="height: 400px; width: 100%;"></div>
+    <button type="submit">Kaydet</button>
+</form>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    // Harita başlangıcı
+    var map = L.map('map').setView([39.9334, 32.8597], 13); // Başlangıç konumu: Ankara'nın koordinatları
+
+    // OpenStreetMap tile'ları
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Marker (işaretçi) ekleme
+    var marker = L.marker([39.9334, 32.8597]).addTo(map);
+
+    // Harita üzerinde animasyonlu bir işaretçi ekleme
+    map.on('click', function(e) {
+        var lat = e.latlng.lat;
+        var lng = e.latlng.lng;
+
+        // Marker'ı tıklanan koordinatlara taşıma (animasyonlu)
+        marker.setLatLng([lat, lng]).setPopup("Yeni Konum: " + lat.toFixed(4) + ", " + lng.toFixed(4)).openPopup();
+        
+        // Form elemanlarına tıklanan koordinatları yerleştirme
+        document.getElementById("id_latitude").value = lat;
+        document.getElementById("id_longitude").value = lng;
+    });
+</script>
+
+{% endblock %}

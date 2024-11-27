@@ -1,5 +1,41 @@
 from django import forms
 from .models import User, Interest
+from django import forms
+from .models import Event
+
+
+class EventForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = ['name', 'description', 'date', 'duration', 'location', 'category', 'created_by']
+
+    # Customize the date field to use a date picker (HTML5 input type="date")
+    date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),  # Adds a date picker to the form
+        required=True,
+        label='Etkinlik Tarihi'
+    )
+
+
+# forms.py
+from django import forms
+from .models import Event
+
+# EventForm
+from django import forms
+from .models import Event
+
+class EventCreationForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = ['name', 'description', 'date', 'duration', 'location', 'category']
+   # Customize the date field to use a date picker (HTML5 input type="date")
+    date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),  # Adds a date picker to the form
+        required=True,
+        label='Etkinlik Tarihi'
+    )
+
 
 class CustomUserCreationForm(forms.ModelForm):
     # İlgili ilgi alanlarını kullanıcıya sunmak için CheckboxSelectMultiple kullanıyoruz
@@ -57,3 +93,14 @@ class UserInterestForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['interests']
+
+from django import forms
+from .models import Event
+
+from django import forms
+from .models import Event
+
+class EventForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = ['name', 'description', 'date', 'duration', 'location', 'category', 'created_by']  # time alanı kaldırıldı

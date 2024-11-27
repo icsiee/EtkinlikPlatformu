@@ -1,0 +1,11 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+<h2>Etkinlik Silme</h2>
+<p>{{ event.name }} etkinliğini silmek istediğinizden emin misiniz?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn">Evet, sil</button>
+</form>
+<a href="{% url 'event_list' %}" class="btn">Hayır, iptal et</a>
+{% endblock %}

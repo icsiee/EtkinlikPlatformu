@@ -70,18 +70,27 @@ class User(AbstractUser):
 
 
 # Etkinlik Modeli
+# models.py
+from django.db import models
+
+# models.py
+from django.db import models
+
 class Event(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    date = models.DateField()
-    time = models.TimeField()
-    duration = models.DurationField()
-    location = models.CharField(max_length=100)
-    category = models.CharField(max_length=50)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_events')
+    name = models.CharField(max_length=100)  # Etkinlik adı
+    description = models.TextField()  # Etkinlik açıklaması
+    date = models.DateField()  # Etkinlik tarihi
+    time = models.TimeField(null=True, blank=True)  # Etkinlik saati, nullable ve blankable
+    duration = models.DurationField()  # Etkinlik süresi
+    location = models.CharField(max_length=100)  # Etkinlik yeri
+    category = models.CharField(max_length=50)  # Etkinlik kategorisi
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  # Enlem
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  # Boylam
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_events')  # Etkinliği oluşturan kullanıcı
 
     def __str__(self):
-        return self.name
+        return self.name  # Burada name kullanıyoruz
+
 
 
 # Katılımcı Modeli

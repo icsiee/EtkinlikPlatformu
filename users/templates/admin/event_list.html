@@ -1,0 +1,29 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+<h2>Etkinlikler</h2>
+<a href="{% url 'event_add' %}" class="btn">Yeni Etkinlik Ekle</a>
+<table>
+    <thead>
+        <tr>
+            <th>Etkinlik Adı</th>
+            <th>Tarih</th>
+            <th>Yer</th>
+            <th>İşlem</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for event in events %}
+        <tr>
+            <td>{{ event.name }}</td>
+            <td>{{ event.date }}</td>
+            <td>{{ event.location }}</td>
+            <td>
+                <a href="{% url 'event_edit' event.id %}" class="btn">Düzenle</a>
+                <a href="{% url 'event_delete' event.id %}" class="btn">Sil</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

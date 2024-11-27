@@ -64,7 +64,9 @@ ROOT_URLCONF = 'etkinlik_platformu.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # Proje düzeyinde 'templates' klasörü
+        'DIRS': [
+            BASE_DIR / "templates",  # Proje genelindeki templates klasörü
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,6 +78,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 
 

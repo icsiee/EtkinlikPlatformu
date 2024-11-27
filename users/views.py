@@ -173,3 +173,114 @@ def edit_user(request, user_id):
         return redirect('admin_dashboard')
 
     return render(request, 'edit_user.html', {'user': user})
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse
+from .models import Event
+from .forms import EventForm  # Assuming you will create a form for Event model
+from django.contrib.auth.decorators import login_required
+
+# View for listing all events
+# views.py
+from django.shortcuts import render, redirect
+from .models import Event
+from .forms import EventCreationForm
+
+# Etkinlik Listeleme View'i
+def event_list(request):
+    events = Event.objects.all()
+    return render(request, 'events/event_list.html', {'events': events})
+
+# Etkinlik Ekleme/Düzenleme View'i
+from django.shortcuts import render, redirect
+from .forms import EventForm
+from django.contrib.auth.decorators import login_required
+
+@login_required  # Bu dekoratör, kullanıcının giriş yapmış olmasını zorunlu kılar
+def event_add(request):
+    if request.method == 'POST':
+        form = EventForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)  # Etkinliği veritabanına kaydetmeden önce düzenleyelim
+            event.created_by = request.user  # Oturum açmış kullanıcıyı 'created_by' alanına ata
+            event.save()  # Etkinliği kaydet
+            return redirect('event_list')  # Etkinlik listesine yönlendirme yap
+    else:
+        form = EventForm()
+    return render(request, 'events/event_add.html', {'form': form})
+
+
+# View for editing an event
+@login_required
+def event_edit(request, pk):
+    event = get_object_or_404(Event, pk=pk)
+    if request.method == 'POST':
+        form = EventForm(request.POST, instance=event)
+        if form.is_valid():
+            form.save()
+            return redirect('event_list')  # Redirect after successful edit
+    else:
+        form = EventForm(instance=event)
+    return render(request, 'admin/event_form.html', {'form': form})
+
+# View for deleting an event
+@login_required
+def event_delete(request, pk):
+    event = get_object_or_404(Event, pk=pk)
+    if request.method == 'POST':
+        event.delete()
+        return redirect('event_list')  # Redirect after deletion
+    return render(request, 'admin/event_confirm_delete.html', {'event': event})
+
+# views.py
+from django.shortcuts import render, redirect
+from .forms import EventCreationForm
+
+def create_event(request):
+    if request.method == 'POST':
+        form = EventCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('event_list')  # Başka bir sayfaya yönlendirebilirsiniz
+    else:
+        form = EventCreationForm()
+    return render(request, 'create_event.html', {'form': form})
+
+from django.shortcuts import render, redirect
+from .models import Event  # Event modelini import edin
+
+def event_create(request):
+    if request.method == "POST":
+        # Formdan gelen enlem ve boylam bilgilerini alın
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+
+        # Yeni etkinlik kaydını oluşturun
+        Event.objects.create(
+            title=request.POST.get('title'),  # Etkinlik başlığı gibi diğer form verileri
+            latitude=latitude,
+            longitude=longitude
+        )
+
+        return redirect('event_list')  # Etkinlikler listesine yönlendirme
+
+    return render(request, 'event_map.html')
+
+from django.shortcuts import render
+
+def select_event_location(request):
+    if request.method == "POST":
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+
+        # Veritabanına kaydetme işlemi burada yapılabilir
+        # Event.objects.create(latitude=latitude, longitude=longitude)
+
+        # Başka bir sayfaya yönlendirme (örneğin, etkinlik listeleme sayfası)
+        return redirect('event_list')
+
+    return render(request, 'events/select_event_location.html')
+
+
+
+
