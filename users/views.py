@@ -95,7 +95,7 @@ def password_reset_view(request):
     if request.method == 'POST':
         form = PasswordResetForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(request.POST)
             return redirect('login')  # Parola sıfırlama işlemi başarıyla tamamlandığında login sayfasına yönlendir
     else:
         form = PasswordResetForm()
