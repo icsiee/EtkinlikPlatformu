@@ -1,5 +1,8 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
+from .views import events_dashboard
+from django.contrib import admin
+
 
 urlpatterns = [
     path('admin-login/', views.admin_login, name='admin_login'),  # Admin giriş
@@ -18,6 +21,7 @@ urlpatterns = [
     path('create/', views.create_event, name='create_event'),
     path('event/create/', views.event_create, name='create_event'),
     path('select-location/', views.select_event_location, name='select_event_location'),
+    path('admin/', admin.site.urls),
 
     # Other paths for logout, etc.
 ]

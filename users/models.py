@@ -59,9 +59,9 @@ class Event(models.Model):
     duration = models.DurationField(null=True, blank=True)  # Etkinlik süresi
     location = models.CharField(max_length=100)  # Etkinlik yeri
     category = models.CharField(max_length=50)  # Etkinlik kategorisi
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  # Enlem
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  # Boylam
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_events')  # Etkinliği oluşturan kullanıcı
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
 
     def __str__(self):
         return self.name

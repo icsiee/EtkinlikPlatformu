@@ -178,18 +178,25 @@ from django.shortcuts import render, redirect
 
 from django.contrib.auth.decorators import login_required
 
+# users/views.py
+# users/views.py
+from django.shortcuts import render, redirect
+from .forms import EventCreationForm
+from .models import Event
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def event_add(request):
     if request.method == 'POST':
-        form = EventForm(request.POST)
+        form = EventCreationForm(request.POST)
         if form.is_valid():
-            # Save the event
-            form.save()
-            return redirect('events_dashboard')  # Redirect to a page (e.g., dashboard or event list)
+            event = form.save(commit=False)  # Veritabanına kaydetmeden önce bir nesne oluştur
+            event.created_by = request.user  # created_by alanını oturum açmış kullanıcıya ata
+            event.save()  # Artık tüm alanlarla birlikte kaydedebilirsiniz
+            return redirect('users:events_dashboard')  # Başarılıysa users namespace içindeki events_dashboard'a yönlendir
     else:
-        form = EventForm()
-
-    return render(request, 'events/event_add.html', {'form': form})
+        form = EventCreationForm()
+    return render(request, 'users/event_form.html', {'form': form})
 
 
 # View for editing an event
@@ -264,5 +271,13 @@ def select_event_location(request):
 
     return render(request, 'events/select_event_location.html')
 
+# users/views.py
+from django.shortcuts import render
+from .models import Event  # Event modelini import edin
+
+def events_dashboard(request):
+    # Tüm etkinlikleri dashboard görünümü için alın
+    events = Event.objects.all()
+    return render(request, 'users/events_dashboard.html', {'events': events})
 
 

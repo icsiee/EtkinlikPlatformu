@@ -20,13 +20,15 @@ class EventForm(forms.ModelForm):
     from django import forms
     from .models import Event
 
+# users/forms.py
+from django import forms
+from .models import Event
+
 class EventCreationForm(forms.ModelForm):
-        class Meta:
-            model = Event
-            fields = [
-                'name', 'description', 'date', 'time', 'duration',
-                'location', 'category', 'latitude', 'longitude'
-            ]
+    class Meta:
+        model = Event
+        fields = ['name', 'date', 'location', 'latitude', 'longitude']  # created_by formda yok
+
 
 
 class CustomUserCreationForm(forms.ModelForm):
