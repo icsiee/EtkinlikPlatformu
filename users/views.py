@@ -1,20 +1,13 @@
-from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render, redirect
-from django.contrib import messages
+
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import User
-from django.contrib.auth.decorators import login_required
+from .models import User, Event
 from .forms import CustomUserCreationForm
+from .forms import EventCreationForm
+from django.shortcuts import render, get_object_or_404, redirect
 
 User = get_user_model()
-
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
-from django.http import HttpResponseForbidden
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
@@ -174,39 +167,28 @@ def edit_user(request, user_id):
 
     return render(request, 'edit_user.html', {'user': user})
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
-from .models import Event
-from .forms import EventForm  # Assuming you will create a form for Event model
-from django.contrib.auth.decorators import login_required
-
-# View for listing all events
-# views.py
-from django.shortcuts import render, redirect
-from .models import Event
-from .forms import EventCreationForm
 
 # Etkinlik Listeleme View'i
 def event_list(request):
     events = Event.objects.all()
-    return render(request, 'events/event_list.html', {'events': events})
+    return render(request, 'admin/event_list.html', {'admin': events})
 
 # Etkinlik Ekleme/Düzenleme View'i
 from django.shortcuts import render, redirect
-from .forms import EventForm
+
 from django.contrib.auth.decorators import login_required
 
-@login_required  # Bu dekoratör, kullanıcının giriş yapmış olmasını zorunlu kılar
+
 def event_add(request):
     if request.method == 'POST':
         form = EventForm(request.POST)
         if form.is_valid():
-            event = form.save(commit=False)  # Etkinliği veritabanına kaydetmeden önce düzenleyelim
-            event.created_by = request.user  # Oturum açmış kullanıcıyı 'created_by' alanına ata
-            event.save()  # Etkinliği kaydet
-            return redirect('event_list')  # Etkinlik listesine yönlendirme yap
+            # Save the event
+            form.save()
+            return redirect('events_dashboard')  # Redirect to a page (e.g., dashboard or event list)
     else:
         form = EventForm()
+
     return render(request, 'events/event_add.html', {'form': form})
 
 
@@ -234,20 +216,21 @@ def event_delete(request, pk):
 
 # views.py
 from django.shortcuts import render, redirect
-from .forms import EventCreationForm
+
+from django.shortcuts import render, redirect
+from .forms import EventForm
+
+from django.shortcuts import render, redirect
 
 def create_event(request):
     if request.method == 'POST':
         form = EventCreationForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('event_list')  # Başka bir sayfaya yönlendirebilirsiniz
+            form.save()  # Etkinlik kaydedilir
+            return redirect('event_list')  # Kayıt sonrası yönlendirme
     else:
         form = EventCreationForm()
-    return render(request, 'create_event.html', {'form': form})
-
-from django.shortcuts import render, redirect
-from .models import Event  # Event modelini import edin
+    return render(request, 'events/event_form.html', {'form': form})
 
 def event_create(request):
     if request.method == "POST":
@@ -280,7 +263,6 @@ def select_event_location(request):
         return redirect('event_list')
 
     return render(request, 'events/select_event_location.html')
-
 
 
 

@@ -1,21 +1,15 @@
-from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 # İlgi Alanları Modeli
 class Interest(models.Model):
-    name = models.CharField(max_length=100, unique=True)  # Her ilgi alanı eşsiz olacak
+    name = models.CharField(max_length=100, unique=True)
     description = models.TextField()
 
     def __str__(self):
         return self.name
 
-
 # Kullanıcı Modeli
-from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.db import models
-
-# Özel User Manager
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
         if not email:
@@ -30,10 +24,8 @@ class UserManager(BaseUserManager):
     def create_superuser(self, username, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-
         return self.create_user(username, email, password, **extra_fields)
 
-# Kullanıcı Modeli
 class User(AbstractUser):
     name = models.CharField(max_length=50)
     surname = models.CharField(max_length=50)
@@ -44,44 +36,27 @@ class User(AbstractUser):
         null=True,
         blank=True,
     )
-    email = models.EmailField(unique=True)  # E-posta eşsiz olacak
+    email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
-    is_admin = models.BooleanField(default=False)  # Yönetici yetkileri için
-    interests = models.ManyToManyField('Interest', blank=True)  # Many-to-many ilişki
+    is_admin = models.BooleanField(default=False)
+    interests = models.ManyToManyField('Interest', blank=True)
 
-    # related_name parametrelerini ekliyoruz
-    groups = models.ManyToManyField(
-        'auth.Group',
-        related_name='custom_user_set',
-        blank=True
-    )
-    user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        related_name='custom_user_permissions_set',
-        blank=True
-    )
-
-    # Kullanıcı modeline UserManager'ı bağlıyoruz
     objects = UserManager()
 
     def __str__(self):
         return self.username
 
-
 # Etkinlik Modeli
-# models.py
 from django.db import models
-
-# models.py
-from django.db import models
+from users.models import User  # Kullanıcı modeli için
 
 class Event(models.Model):
     name = models.CharField(max_length=100)  # Etkinlik adı
     description = models.TextField()  # Etkinlik açıklaması
     date = models.DateField()  # Etkinlik tarihi
-    time = models.TimeField(null=True, blank=True)  # Etkinlik saati, nullable ve blankable
-    duration = models.DurationField()  # Etkinlik süresi
+    time = models.TimeField(null=True, blank=True)  # Etkinlik saati
+    duration = models.DurationField(null=True, blank=True)  # Etkinlik süresi
     location = models.CharField(max_length=100)  # Etkinlik yeri
     category = models.CharField(max_length=50)  # Etkinlik kategorisi
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  # Enlem
@@ -89,36 +64,32 @@ class Event(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_events')  # Etkinliği oluşturan kullanıcı
 
     def __str__(self):
-        return self.name  # Burada name kullanıyoruz
-
-
+        return self.name
 
 # Katılımcı Modeli
 class Participant(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='participations')
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='participants')
-    join_date = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='participations')  # Kullanıcı
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='participants')  # Etkinlik
+    join_date = models.DateTimeField(auto_now_add=True)  # Katılım tarihi
 
     def __str__(self):
-        return f"{self.user.username} - {self.event.name}"
-
+        return f"{self.user.username} - {self.event.title}"
 
 # Mesaj Modeli
 class Message(models.Model):
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='event_messages')
-    text = models.TextField()
-    sent_at = models.DateTimeField(auto_now_add=True)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')  # Mesajı gönderen kullanıcı
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='event_messages')  # Etkinlik
+    text = models.TextField()  # Mesaj içeriği
+    sent_at = models.DateTimeField(auto_now_add=True)  # Gönderilme zamanı
 
     def __str__(self):
-        return f"Message from {self.sender.username} in {self.event.name}"
-
+        return f"Message from {self.sender.username} in {self.event.title}"
 
 # Puan Sistemi Modeli
 class Points(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='points')
-    score = models.PositiveIntegerField()
-    date_earned = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='points')  # Kullanıcı
+    score = models.PositiveIntegerField()  # Puan
+    date_earned = models.DateTimeField(auto_now_add=True)  # Puan kazanılma tarihi
 
     def __str__(self):
         return f"{self.user.username}: {self.score} points"

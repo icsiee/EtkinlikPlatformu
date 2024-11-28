@@ -1,7 +1,5 @@
 from django import forms
-from .models import User, Interest
-from django import forms
-from .models import Event
+from .models import Event, User, Interest
 
 
 class EventForm(forms.ModelForm):
@@ -16,25 +14,19 @@ class EventForm(forms.ModelForm):
         label='Etkinlik Tarihi'
     )
 
+    from django import forms
+    from .models import Event
 
-# forms.py
-from django import forms
-from .models import Event
-
-# EventForm
-from django import forms
-from .models import Event
+    from django import forms
+    from .models import Event
 
 class EventCreationForm(forms.ModelForm):
-    class Meta:
-        model = Event
-        fields = ['name', 'description', 'date', 'duration', 'location', 'category']
-   # Customize the date field to use a date picker (HTML5 input type="date")
-    date = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),  # Adds a date picker to the form
-        required=True,
-        label='Etkinlik Tarihi'
-    )
+        class Meta:
+            model = Event
+            fields = [
+                'name', 'description', 'date', 'time', 'duration',
+                'location', 'category', 'latitude', 'longitude'
+            ]
 
 
 class CustomUserCreationForm(forms.ModelForm):
@@ -47,7 +39,7 @@ class CustomUserCreationForm(forms.ModelForm):
 
     # Doğum tarihi için tarih widget'ı ekliyoruz (sınırlama yok)
     birth_date = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date'}),
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),  # Adds a date picker to the form
         required=True,
         label='Doğum Tarihi'
     )
@@ -84,8 +76,6 @@ class CustomUserCreationForm(forms.ModelForm):
             raise forms.ValidationError("Bu e-posta adresi zaten kullanılıyor.")
         return email
 
-from django import forms
-from .models import User, Interest
 
 class UserInterestForm(forms.ModelForm):
     interests = forms.ModelMultipleChoiceField(queryset=Interest.objects.all(), widget=forms.CheckboxSelectMultiple)
@@ -93,14 +83,3 @@ class UserInterestForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['interests']
-
-from django import forms
-from .models import Event
-
-from django import forms
-from .models import Event
-
-class EventForm(forms.ModelForm):
-    class Meta:
-        model = Event
-        fields = ['name', 'description', 'date', 'duration', 'location', 'category', 'created_by']  # time alanı kaldırıldı
