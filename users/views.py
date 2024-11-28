@@ -9,6 +9,10 @@ from .models import User
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm
 
+from django.contrib.auth.views import PasswordResetView
+from .forms import UsernameResetForm
+
+
 User = get_user_model()
 
 from django.shortcuts import render, redirect
@@ -112,19 +116,6 @@ def password_reset_view(request):
         form = PasswordResetForm()
     return render(request, 'users/password_reset.html', {'form': form})
 
-def signup_view(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            form.save()
-            messages.success(request, "Parola sıfırlama talimatları gönderildi!")
-            return redirect('login')
-    else:
-        form = PasswordResetForm()
-
-    return render(request, 'users/password_reset.html', {'form': form})
-
 
 @csrf_exempt
 def user_dashboard(request):
@@ -200,7 +191,7 @@ from .forms import EventCreationForm
 # Etkinlik Listeleme View'i
 def event_list(request):
     events = Event.objects.all()
-    return render(request, 'events/event_list.html', {'events': events})
+    return render(request, 'admin/event_list.html', {'events': events})
 
 # Etkinlik Ekleme/Düzenleme View'i
 from django.shortcuts import render, redirect
@@ -293,5 +284,57 @@ def select_event_location(request):
     return render(request, 'events/select_event_location.html')
 
 
+
+@csrf_exempt
+def password_reset_view(request):
+    if request.method == 'POST':
+        form = UsernameResetForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            user = User.objects.get(username=username)
+
+            # Parola sıfırlama token'ı oluştur
+            token = default_token_generator.make_token(user)
+            uid = user.pk  # Kullanıcı ID'sini al
+
+            # Şifre sıfırlama bağlantısını oluştur
+            reset_url = f"{request.scheme}://{request.get_host()}/password_reset/{uid}/{token}/"
+
+            # Kullanıcıya e-posta gönder
+            send_mail(
+                'Parola Sıfırlama Talebi',
+                f'Parolanızı sıfırlamak için şu bağlantıya tıklayın: {reset_url}',
+                'no-reply@example.com',
+                [user.email],
+                fail_silently=False,
+            )
+
+            messages.success(request, "E-posta adresinize parola sıfırlama bağlantısı gönderildi.")
+            return redirect('login')  # Parola sıfırlama linki gönderildikten sonra login sayfasına yönlendir
+    else:
+        form = UsernameResetForm()
+    return render(request, 'users/password_reset.html', {'form': form})
+
+def password_reset_confirm_view(request, uidb64, token):
+    try:
+        # UID'yi ve token'ı çözümle
+        uid = uidb64
+        user = get_user_model().objects.get(pk=uid)
+
+        if default_token_generator.check_token(user, token):
+            if request.method == 'POST':
+                form = SetPasswordForm(user, request.POST)
+                if form.is_valid():
+                    form.save()
+                    return redirect('login')  # Parola başarıyla sıfırlandığında login sayfasına yönlendir
+            else:
+                form = SetPasswordForm(user)
+            return render(request, 'users/password_reset_confirm.html', {'form': form})
+        else:
+            messages.error(request, "Geçersiz veya süreli dolmuş parola sıfırlama bağlantısı.")
+            return redirect('password_reset')
+    except Exception as e:
+        messages.error(request, "Geçersiz kullanıcı veya token.")
+        return redirect('password_reset')
 
 

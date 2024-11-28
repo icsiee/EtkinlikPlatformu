@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.contrib.auth.views import PasswordResetView
+
 
 urlpatterns = [
     path('admin-login/', views.admin_login, name='admin_login'),  # Admin giriş
@@ -18,6 +20,8 @@ urlpatterns = [
     path('create/', views.create_event, name='create_event'),
     path('event/create/', views.event_create, name='create_event'),
     path('select-location/', views.select_event_location, name='select_event_location'),
+
+    path('password_reset/', PasswordResetView.as_view(), name='password_reset'),
 
     # Other paths for logout, etc.
 ]
