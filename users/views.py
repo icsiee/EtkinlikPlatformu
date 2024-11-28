@@ -38,7 +38,6 @@ def user_login(request):
     return render(request, 'login.html')  # Render the login page
 
 @csrf_exempt
-
 # Admin login view
 def admin_login(request):
     if request.method == 'POST':
@@ -108,9 +107,84 @@ def password_reset_view(request):
     return render(request, 'users/password_reset.html', {'form': form})
 
 
-@csrf_exempt
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Event, UserEvent
+from django.contrib import messages
+
+
+
+from django.db.models import Sum  # Import the Sum function for aggregation
+
+from django.shortcuts import render
+from .models import Event, UserEvent, Points
+
+from django.shortcuts import render
+from django.db.models import Sum
+from .models import Event, UserEvent, Points
+
+from django.shortcuts import render
+from .models import User, Event, Participant, Points
+
+from django.shortcuts import render
+from .models import User, Event, Participant, Points
+
+from django.shortcuts import render
+from .models import Event, Participant, User
+
+
 def user_dashboard(request):
-    return render(request, 'user_dashboard.html')  # User dashboard ekranı
+    user = request.user
+
+    # Kullanıcının oluşturduğu etkinlikleri al
+    created_events = Event.objects.filter(created_by=user)
+
+    # Kullanıcının katıldığı etkinlikleri al
+    user_events = Event.objects.filter(participants__user=user)
+
+    # Katılabileceği diğer etkinlikleri al (kendi oluşturduğu etkinlikler hariç)
+    available_events = Event.objects.exclude(created_by=user)  # Kullanıcının oluşturduğu etkinlikleri hariç tut
+
+    # Kullanıcının etkinlik sayısını ve toplam puanını hesapla
+    user_events_count = user_events.count()
+    user_created_events_count = created_events.count()
+    participation_points = user_events_count * 10  # Her etkinlik için 10 puan
+    creation_points = user_created_events_count * 15  # Her etkinlik oluşturma için 15 puan
+    first_participation_bonus = 20 if user_events_count > 0 else 0  # İlk katılım bonusu
+    total_points = participation_points + creation_points + first_participation_bonus
+
+    context = {
+        'user_events_count': user_events_count,
+        'user_created_events_count': user_created_events_count,
+        'total_points': total_points,
+        'user_events': user_events,
+        'created_events': created_events,
+        'available_events': available_events,  # Diğer etkinlikler
+        'first_participation_bonus': first_participation_bonus,
+    }
+
+    return render(request, 'users/user_dashboard.html', context)
+
+
+from django.shortcuts import get_object_or_404, redirect
+from .models import Event, Participant
+
+from django.shortcuts import get_object_or_404, redirect
+from .models import Event, Participant
+
+
+def join_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    user = request.user
+
+    # Kullanıcıyı etkinliğe katılanlar listesine ekle
+    if not Participant.objects.filter(user=user, event=event).exists():
+        Participant.objects.create(user=user, event=event)
+
+    return redirect('user_dashboard')  # Kullanıcıyı dashboard'a yönlendir
 
 
 @csrf_exempt

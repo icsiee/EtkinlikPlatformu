@@ -20,5 +20,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('edit/<int:event_id>/', views.edit_event, name='edit_event'),  # Etkinlik düzenleme
     path('delete/<int:event_id>/', views.delete_event, name='delete_event'),  # Etkinlik silme
+    path('join_event/<int:event_id>/', views.join_event, name='join_event'),
+
     # Other paths for logout, etc.
 ]

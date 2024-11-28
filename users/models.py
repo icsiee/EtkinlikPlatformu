@@ -48,9 +48,6 @@ class User(AbstractUser):
         return self.username
 
 # Etkinlik Modeli
-from django.db import models
-from users.models import User  # Kullanıcı modeli için
-
 class Event(models.Model):
     CATEGORY_CHOICES = [
         ('music', 'Müzik'),
@@ -73,20 +70,27 @@ class Event(models.Model):
     )
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_events')  # Düzenlendi
 
     def __str__(self):
         return self.name
 
+# Kullanıcı Etkinlik Modeli (Katılımı ve oluşturduğu etkinlikleri ilişkilendirir)
+class UserEvent(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_events')  # Düzenlendi
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='user_participants')  # Düzenlendi
 
-# Katılımcı Modeli
+    def __str__(self):
+        return f'{self.user.username} - {self.event.name}'
+
+# Katılımcı Modeli (Etkinlik katılımlarını tutar)
 class Participant(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='participations')  # Kullanıcı
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='participants')  # Etkinlik
     join_date = models.DateTimeField(auto_now_add=True)  # Katılım tarihi
 
     def __str__(self):
-        return f"{self.user.username} - {self.event.title}"
+        return f"{self.user.username} - {self.event.name}"  # Etkinlik adı düzeltilmiş
 
 # Mesaj Modeli
 class Message(models.Model):
@@ -96,7 +100,7 @@ class Message(models.Model):
     sent_at = models.DateTimeField(auto_now_add=True)  # Gönderilme zamanı
 
     def __str__(self):
-        return f"Message from {self.sender.username} in {self.event.title}"
+        return f"Message from {self.sender.username} in {self.event.name}"
 
 # Puan Sistemi Modeli
 class Points(models.Model):
