@@ -52,19 +52,32 @@ from django.db import models
 from users.models import User  # Kullanıcı modeli için
 
 class Event(models.Model):
+    CATEGORY_CHOICES = [
+        ('music', 'Müzik'),
+        ('sports', 'Spor'),
+        ('education', 'Eğitim'),
+        ('technology', 'Teknoloji'),
+        ('art', 'Sanat'),
+    ]
+
     name = models.CharField(max_length=100)  # Etkinlik adı
     description = models.TextField()  # Etkinlik açıklaması
     date = models.DateField()  # Etkinlik tarihi
     time = models.TimeField(null=True, blank=True)  # Etkinlik saati
     duration = models.DurationField(null=True, blank=True)  # Etkinlik süresi
     location = models.CharField(max_length=100)  # Etkinlik yeri
-    category = models.CharField(max_length=50)  # Etkinlik kategorisi
+    category = models.CharField(
+        max_length=50,
+        choices=CATEGORY_CHOICES,  # Kategori seçenekleri
+        default='music'  # Varsayılan değer
+    )
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
 
     def __str__(self):
         return self.name
+
 
 # Katılımcı Modeli
 class Participant(models.Model):

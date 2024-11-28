@@ -1,4 +1,4 @@
-{% extends 'admin/base.html' %}
+{% extends 'base_generic.html' %}
 
 {% block content %}
 <h2>Etkinlik Ekle/Düzenle</h2>
@@ -16,7 +16,7 @@
     <div id="map" style="width: 100%; height: 400px;"></div>
 
     <!-- Kaydet Butonu -->
-<a href="{% url 'create_event' %}">KAAAAAAYDET</a>
+    <button type="submit">Kaydet</button>
 </form>
 
 <!-- Leaflet.js CSS -->

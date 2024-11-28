@@ -170,8 +170,8 @@ def edit_user(request, user_id):
 
 # Etkinlik Listeleme View'i
 def event_list(request):
-    events = Event.objects.all()
-    return render(request, 'admin/event_list.html', {'admin': events})
+    events = Event.objects.filter(created_by=request.user)  # Kullanıcıya ait etkinlikleri listele
+    return render(request, 'admin/event_list.html', {'events': events})
 
 # Etkinlik Ekleme/Düzenleme View'i
 from django.shortcuts import render, redirect
@@ -191,9 +191,9 @@ def event_add(request):
         form = EventCreationForm(request.POST)
         if form.is_valid():
             event = form.save(commit=False)  # Veritabanına kaydetmeden önce bir nesne oluştur
-            event.created_by = request.user  # created_by alanını oturum açmış kullanıcıya ata
-            event.save()  # Artık tüm alanlarla birlikte kaydedebilirsiniz
-            return redirect('users:events_dashboard')  # Başarılıysa users namespace içindeki events_dashboard'a yönlendir
+            event.created_by = request.user  # Etkinliği oluşturan kullanıcıyı ata
+            event.save()  # Etkinliği kaydet
+            return redirect('users:events_dashboard')  # Başarılıysa yönlendirme yap
     else:
         form = EventCreationForm()
     return render(request, 'users/event_form.html', {'form': form})
@@ -223,61 +223,28 @@ def event_delete(request, pk):
 
 # views.py
 from django.shortcuts import render, redirect
-
-from django.shortcuts import render, redirect
+from .models import Event
 from .forms import EventForm
 
 from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Event
+from .forms import EventForm
 
 def create_event(request):
     if request.method == 'POST':
-        form = EventCreationForm(request.POST)
+        form = EventForm(request.POST)
         if form.is_valid():
-            form.save()  # Etkinlik kaydedilir
-            return redirect('event_list')  # Kayıt sonrası yönlendirme
+            event = form.save(commit=False)
+            event.created_by = request.user  # Etkinliği oluşturan kullanıcıyı ata
+            # Latitude ve longitude değerlerini formdan al
+            event.latitude = request.POST.get('latitude')
+            event.longitude = request.POST.get('longitude')
+            event.location = f"{event.latitude}, {event.longitude}"  # Konum bilgisini birleştir
+            event.save()
+            # Kullanıcıya başarı mesajı gönder
+            messages.success(request, 'Etkinlik başarıyla kaydedildi!')
+            return redirect('event_list')  # Etkinlik listesi sayfasına yönlendir
     else:
-        form = EventCreationForm()
-    return render(request, 'events/event_form.html', {'form': form})
-
-def event_create(request):
-    if request.method == "POST":
-        # Formdan gelen enlem ve boylam bilgilerini alın
-        latitude = request.POST.get('latitude')
-        longitude = request.POST.get('longitude')
-
-        # Yeni etkinlik kaydını oluşturun
-        Event.objects.create(
-            title=request.POST.get('title'),  # Etkinlik başlığı gibi diğer form verileri
-            latitude=latitude,
-            longitude=longitude
-        )
-
-        return redirect('event_list')  # Etkinlikler listesine yönlendirme
-
-    return render(request, 'event_map.html')
-
-from django.shortcuts import render
-
-def select_event_location(request):
-    if request.method == "POST":
-        latitude = request.POST.get('latitude')
-        longitude = request.POST.get('longitude')
-
-        # Veritabanına kaydetme işlemi burada yapılabilir
-        # Event.objects.create(latitude=latitude, longitude=longitude)
-
-        # Başka bir sayfaya yönlendirme (örneğin, etkinlik listeleme sayfası)
-        return redirect('event_list')
-
-    return render(request, 'events/select_event_location.html')
-
-# users/views.py
-from django.shortcuts import render
-from .models import Event  # Event modelini import edin
-
-def events_dashboard(request):
-    # Tüm etkinlikleri dashboard görünümü için alın
-    events = Event.objects.all()
-    return render(request, 'users/events_dashboard.html', {'events': events})
-
-
+        form = EventForm()
+    return render(request, 'users/event_map.html', {'form': form})
