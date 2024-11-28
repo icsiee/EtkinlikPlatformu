@@ -1,6 +1,59 @@
 {% extends 'base_generic.html' %}
 
 {% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+    /* Koyu tema genel ayarları */
+    body {
+        background-color: #2c2f33;
+        color: #ffffff;
+        font-family: Arial, sans-serif;
+    }
+
+    h2 {
+        color: #7289da;
+        text-align: center;
+    }
+
+    form {
+        background-color: #23272a;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        max-width: 600px;
+        margin: 20px auto;
+    }
+
+    select.form-control {
+        background-color: #2c2f33;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px;
+    }
+
+    button {
+        background-color: #7289da;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px;
+        cursor: pointer;
+        width: 100%;
+        transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #5b6eae;
+    }
+
+    #map {
+        border: 2px solid #7289da;
+        border-radius: 5px;
+        margin-top: 10px;
+    }
+</style>
+
 <h2>Etkinlik Ekle</h2>
 
 <form method="POST">
@@ -9,20 +62,19 @@
 
     <div id="map" style="height: 400px; width: 100%;"></div>
 
+    <label for="category">Kategori:</label>
+    <select class="form-control" name="category" id="category">
+        {% for value, label in form.category.field.choices %}
+            <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+    </select>
 
-    <select class="form-control">
-    {% for value, label in form.category.field.choices %}
-        <option value="{{ value }}">{{ label }}</option>
-    {% endfor %}
-</select>
-
-     <button type="submit">Kaydet</button>
-
+    <button type="submit">Kaydet</button>
 </form>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-    var map = L.map('map').setView([39.9334, 32.8597], 13); // Ankara merkezi
+    var map = L.map('map').setView([39.9334, 32.8597], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -38,7 +90,7 @@
 
         document.getElementById("id_latitude").value = lat;
         document.getElementById("id_longitude").value = lng;
-        document.getElementById("id_location").value = lat.toFixed(4) + ", " + lng.toFixed(4);  // Konum textbox'ı
+        document.getElementById("id_location").value = lat.toFixed(4) + ", " + lng.toFixed(4);
     });
 </script>
 

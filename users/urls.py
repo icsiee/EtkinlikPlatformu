@@ -15,11 +15,10 @@ urlpatterns = [
     path('edit_user/<int:user_id>/', views.edit_user, name='edit_user'),
     path('dashboard/event/list/', views.event_list, name='event_list'),
     path('events/add/', views.event_add, name='event_add'),
-    path('events/edit/<int:pk>/', views.event_edit, name='event_edit'),
-    path('events/delete/<int:pk>/', views.event_delete, name='event_delete'),
     path('create/', views.create_event, name='create_event'),
     path('dashboard/event/create/', views.create_event, name='create_event'),
     path('admin/', admin.site.urls),
-
+    path('edit/<int:event_id>/', views.edit_event, name='edit_event'),  # Etkinlik düzenleme
+    path('delete/<int:event_id>/', views.delete_event, name='delete_event'),  # Etkinlik silme
     # Other paths for logout, etc.
 ]

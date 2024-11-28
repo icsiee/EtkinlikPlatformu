@@ -200,26 +200,38 @@ def event_add(request):
 
 
 # View for editing an event
-@login_required
-def event_edit(request, pk):
-    event = get_object_or_404(Event, pk=pk)
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import Event
+from .forms import EventForm
+
+
+# Etkinlik düzenleme view
+def edit_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
     if request.method == 'POST':
         form = EventForm(request.POST, instance=event)
         if form.is_valid():
             form.save()
-            return redirect('event_list')  # Redirect after successful edit
+            messages.success(request, "Etkinlik başarıyla güncellendi!")
+            return redirect('event_list')
     else:
         form = EventForm(instance=event)
-    return render(request, 'admin/event_form.html', {'form': form})
 
-# View for deleting an event
-@login_required
-def event_delete(request, pk):
-    event = get_object_or_404(Event, pk=pk)
+    return render(request, 'events/edit_event.html', {'form': form, 'event': event})
+
+
+# Etkinlik silme view
+def delete_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
     if request.method == 'POST':
         event.delete()
-        return redirect('event_list')  # Redirect after deletion
-    return render(request, 'admin/event_confirm_delete.html', {'event': event})
+        messages.success(request, "Etkinlik başarıyla silindi!")
+        return redirect('event_list')
+
+    return render(request, 'events/delete_event.html', {'event': event})
+
 
 # views.py
 from django.shortcuts import render, redirect

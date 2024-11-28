@@ -1,23 +1,165 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Etkinlik Platformu</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <style>
+        /* Koyu tema genel ayarları */
+        body {
+            background-color: #2c2f33; /* Arka plan */
+            color: #ffffff; /* Metin rengi */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #23272a; /* Başlık arka plan */
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        header h1 {
+            color: #7289da; /* Başlık rengi */
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        main {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        main h2 {
+            color: #7289da;
+            text-align: center;
+        }
+
+        form {
+            background-color: #23272a;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input, select, button, textarea {
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        input, textarea {
+            background-color: #2c2f33;
+            color: #ffffff;
+        }
+
+        select {
+            background-color: #23272a;
+            color: #ffffff;
+        }
+
+        button {
+            background-color: #7289da;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #5b6eae;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        ul li {
+            background-color: #7289da;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        ul li:nth-child(even) {
+            background-color: #5b6eae;
+        }
+
+        #map {
+            height: 400px;
+            border-radius: 8px;
+            border: 2px solid #7289da;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
     <header>
         <h1>Etkinlik Platformu</h1>
     </header>
     <main>
-        {% block content %}{% endblock %}
-        {% if messages %}
-    <ul>
-        {% for message in messages %}
-            <li>{{ message }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
+        {% block content %}
+        <h2>Etkinlik Ekle</h2>
 
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <div id="map"></div>
+
+            <label for="category">Kategori:</label>
+            <select class="form-control" name="category" id="category">
+                {% for value, label in form.category.field.choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Kaydet</button>
+        </form>
+
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% endblock %}
     </main>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([39.9334, 32.8597], 13); // Ankara merkezi
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var marker = L.marker([39.9334, 32.8597]).addTo(map);
+
+        map.on('click', function(e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+
+            marker.setLatLng([lat, lng]).setPopup("Yeni Konum: " + lat.toFixed(4) + ", " + lng.toFixed(4)).openPopup();
+
+            document.getElementById("id_latitude").value = lat;
+            document.getElementById("id_longitude").value = lng;
+            document.getElementById("id_location").value = lat.toFixed(4) + ", " + lng.toFixed(4);
+        });
+    </script>
 </body>
 </html>
