@@ -174,20 +174,49 @@ def admin_dashboard(request):
     users = User.objects.all()
     return render(request, 'admin_dashboard.html', {'users': users})
 
-@csrf_exempt
-@login_required
-def edit_user(request, user_id):
-    if not request.user.is_staff:
-        return redirect('home')  # Eğer admin değilse, ana sayfaya yönlendir
 
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import User
+
+from django.db import IntegrityError
+
+
+from django.db import IntegrityError
+
+@csrf_exempt
+def edit_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
 
     if request.method == 'POST':
-        user.username = request.POST['username']
-        user.email = request.POST['email']
-        user.is_active = request.POST['is_active'] == 'True'
-        user.save()
-        return redirect('admin_dashboard')
+        new_username = request.POST.get('username')
+
+        # Kullanıcı adı değiştiyse, benzersiz olup olmadığını kontrol et
+        if new_username != user.username:
+            try:
+                User.objects.get(username=new_username)  # Aynı kullanıcı adı var mı kontrol et
+                return render(request, 'edit_user.html', {'user': user, 'error': 'Bu kullanıcı adı zaten alınmış.'})
+            except User.DoesNotExist:
+                pass  # Kullanıcı adı mevcut değilse geç
+
+        user.username = new_username
+        user.email = request.POST.get('email')
+        user.is_active = request.POST.get('is_active') == 'True'
+        user.phone_number = request.POST.get('phone_number')
+        user.birth_date = request.POST.get('birth_date')
+        user.gender = request.POST.get('gender')
+
+        # Profil resmini güncelle
+        if 'profile_picture' in request.FILES:
+            user.profile_picture = request.FILES['profile_picture']
+
+        try:
+            user.save()  # Kullanıcıyı kaydet
+        except IntegrityError:
+            return render(request, 'edit_user.html', {'user': user, 'error': 'Veritabanı hatası! Lütfen tekrar deneyin.'})
+
+        return redirect('admin_dashboard')  # Düzenlenen kullanıcı detayına yönlendirme
 
     return render(request, 'edit_user.html', {'user': user})
 
@@ -350,6 +379,30 @@ def user_event_map(request, event_id=None):
         'form': form,
         'event': event
     })
+
+
+from django.shortcuts import render, get_object_or_404
+from .models import User, Participant, Event
+
+
+def user_detail(request, user_id):
+    # Kullanıcıyı ID'ye göre buluyoruz
+    user = get_object_or_404(User, id=user_id)
+
+    # Kullanıcının katıldığı etkinlikleri alıyoruz
+    user_participations = Participant.objects.filter(user=user).select_related('event')
+
+    # Kullanıcının oluşturduğu etkinlikleri alıyoruz
+    created_events = Event.objects.filter(created_by=user)
+
+    # Kullanıcının katıldığı etkinliklerin detaylarını ve oluşturduğu etkinlikleri göndereceğiz
+    return render(request, 'user_detail.html', {
+        'user': user,
+        'user_participations': user_participations,
+        'created_events': created_events,
+    })
+
+
 
 
 

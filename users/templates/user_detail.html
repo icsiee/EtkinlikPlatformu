@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }} Detayları</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .container {
+            padding: 20px;
+        }
+        .user-info {
+            margin-bottom: 30px;
+        }
+        .user-info h2 {
+            color: #007bff;
+        }
+        .user-info p {
+            font-size: 1.2rem;
+        }
+        .event-list {
+            margin-top: 20px;
+        }
+        .event-list h3 {
+            color: #007bff;
+        }
+        .event-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .event-list li {
+            padding: 10px;
+            background-color: #f8f9fa;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .event-list a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .event-list a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>{{ user.username }} Detayları</h1>
+    </header>
+
+    <div class="container">
+        <!-- Kullanıcı Bilgileri -->
+        <div class="user-info">
+            <h2>Profil Bilgileri</h2>
+            <p><strong>Ad:</strong> {{ user.name }} {{ user.surname }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Telefon:</strong> {{ user.phone_number }}</p>
+            <p><strong>Doğum Tarihi:</strong> {{ user.birth_date }}</p>
+            <p><strong>Cinsiyet:</strong> {% if user.gender == 'K' %} Kadın {% else %} Erkek {% endif %}</p>
+        </div>
+
+        <!-- Kullanıcının Katıldığı Etkinlikler -->
+        <div class="event-list">
+            <h3>Katıldığınız Etkinlikler</h3>
+            <ul>
+                {% for participation in user_participations %}
+                    <li>
+                        <a href="{% url 'event_detail' participation.event.id %}">{{ participation.event.name }}</a> -
+                        {{ participation.event.date }} - {{ participation.event.location }}<br>
+                        Durum: {% if participation.event.status == 'approved' %} Onaylandı {% else %} Onay Bekliyor {% endif %}
+                    </li>
+                {% empty %}
+                    <li>Henüz katıldığınız etkinlik yok.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Kullanıcının Oluşturduğu Etkinlikler -->
+        <div class="event-list">
+            <h3>Oluşturduğunuz Etkinlikler</h3>
+            <ul>
+                {% for event in created_events %}
+                    <li>
+                        <a href="{% url 'event_detail' event.id %}">{{ event.name }}</a> -
+                        {{ event.date }} - {{ event.location }}<br>
+                        Durum: {% if event.status == 'approved' %} Onaylandı {% else %} Onay Bekliyor {% endif %}
+                    </li>
+                {% empty %}
+                    <li>Henüz oluşturduğunuz etkinlik yok.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

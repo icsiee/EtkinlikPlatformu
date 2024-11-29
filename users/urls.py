@@ -1,6 +1,7 @@
 from django.urls import path, include
 from . import views
 from django.contrib import admin
+from .views import user_detail
 
 
 urlpatterns = [
@@ -27,5 +28,7 @@ path('events/', views.event_list, name='event_list'),
     path('event/<int:event_id>/edit/', views.update_event, name='update_event'),  # Etkinlik düzenleme URL'si
 path('event/map/', views.user_event_map, name='create_event'),  # Yeni etkinlik oluşturma
     path('event/map/<int:event_id>/', views.user_event_map, name='edit_event'),  # Etkinlik düzenleme
+    path('user/<int:user_id>/', user_detail, name='user_detail'),
+
     # Other paths for logout, etc.
 ]

@@ -68,8 +68,14 @@
     </header>
 
     <div class="container">
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
+             <!-- Display error message -->
+    {% if error %}
+        <div style="color: red; font-weight: bold;">
+            {{ error }}
+        </div>
+    {% endif %}
             <div class="form-group">
                 <label for="username">Kullanıcı Adı</label>
                 <input type="text" id="username" name="username" value="{{ user.username }}" required>
@@ -83,6 +89,28 @@
                 <select id="is_active" name="is_active">
                     <option value="True" {% if user.is_active %}selected{% endif %}>Aktif</option>
                     <option value="False" {% if not user.is_active %}selected{% endif %}>Pasif</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="phone_number">Telefon Numarası</label>
+                <input type="text" id="phone_number" name="phone_number" value="{{ user.phone_number }}">
+            </div>
+            <div class="form-group">
+                <label for="profile_picture">Profil Resmi</label>
+                <input type="file" id="profile_picture" name="profile_picture">
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" alt="Profile Picture" width="100">
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="birth_date">Doğum Tarihi</label>
+                <input type="date" id="birth_date" name="birth_date" value="{{ user.birth_date|date:'Y-m-d' }}">
+            </div>
+            <div class="form-group">
+                <label for="gender">Cinsiyet</label>
+                <select id="gender" name="gender">
+                    <option value="K" {% if user.gender == 'K' %}selected{% endif %}>Kadın</option>
+                    <option value="E" {% if user.gender == 'E' %}selected{% endif %}>Erkek</option>
                 </select>
             </div>
             <button type="submit">Düzenlemeyi Kaydet</button>
