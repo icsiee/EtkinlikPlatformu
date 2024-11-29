@@ -55,12 +55,12 @@ def admin_login(request):
             return redirect('admin_dashboard')  # Redirect to admin dashboard
         elif user is not None and not user.is_superuser:  # Non-admin user trying to log in as admin
             messages.error(request, "Kullanıcı girişi sadece kullanıcı panelinde yapılabilir.")
-            return redirect('admin_login')
+            return redirect('login')
         else:
             messages.error(request, "Geçersiz kullanıcı adı veya şifre.")
-            return redirect('admin_login')
+            return redirect('login')
 
-    return render(request, 'admin_login.html')  # Admin login page
+    return render(request, 'login.html')  # Admin login page
 
 
 @csrf_exempt

@@ -75,13 +75,7 @@
                 </div>
                 <button type="submit" class="btn">Giriş Yap</button>
             </form>
-            {% if messages %}
-                <ul>
-                    {% for message in messages %}
-                        <li class="error">{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+
         </div>
 
         <!-- Admin Girişi Paneli -->
@@ -99,10 +93,20 @@
                 </div>
                 <button type="submit">Admin Girişi Yap</button>
             </form>
+
         </div>
     </div>
 
+
+
     <div class="form-footer">
+          {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <li class="error">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
         <p>Hesabınız yok mu? <a href="{% url 'signup' %}">Hesap oluşturun</a></p>
         <p><a href="{% url 'password_reset' %}">Parolanızı mı unuttunuz?</a></p>
     </div>
