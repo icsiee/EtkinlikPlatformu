@@ -117,13 +117,15 @@
             <h3>Oluşturduğunuz Etkinlikler</h3>
             <ul>
                 {% for event in created_events %}
-                    <li>{{ event.name }} - {{ event.date }} - {{ event.location }}</li>
+                    <li>{{ event.name }} - {{ event.date }} - {{ event.location }}<br>
+                        Durum: {% if event.status == 'approved' %} Onaylandı {% else %} Onay Bekliyor {% endif %}
+                    </li>
                 {% endfor %}
             </ul>
         </div>
     </div>
 
-    <!-- Diğer Etkinlikler -->
+    <!-- Katılabileceğiniz Etkinlikler -->
     <div class="dashboard-container">
         <div class="dashboard-panel">
             <h3>Katılabileceğiniz Etkinlikler</h3>

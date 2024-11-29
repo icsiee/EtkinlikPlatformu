@@ -111,17 +111,35 @@
         <!-- Home Button -->
         <a href="{% url 'admin_dashboard' %}" class="home-button">Ana Sayfa</a>
 
-        <h2>Etkinliklerim</h2>
-
+        <h2>Onay Verilen Etkinlikler</h2>
         <ul>
-            {% for event in events %}
+            {% for event in approved_events %}
                 <li>
                     <strong>{{ event.name }}</strong><br>
                     Tarih: {{ event.date }}<br>
                     Saat: {{ event.time }}<br>
                     Konum: {{ event.location }}<br>
+                    Durum: {{ event.get_status_display }}<br>
+                    Oluşturan Kullanıcı: {{ event.created_by.username }}<br>
+
                     <a href="{% url 'edit_event' event.id %}">Düzenle</a> |
                     <a href="{% url 'delete_event' event.id %}">Sil</a>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <h2>Onay Bekleyen Etkinlikler</h2>
+        <ul>
+            {% for event in pending_events %}
+                <li>
+                    <strong>{{ event.name }}</strong><br>
+                    Tarih: {{ event.date }}<br>
+                    Saat: {{ event.time }}<br>
+                    Konum: {{ event.location }}<br>
+                    Oluşturan Kullanıcı: {{ event.created_by.username }}<br>
+                    Durum: {{ event.get_status_display }}<br>
+                    <a href="{% url 'approve_event' event.id %}">Onayla</a> |
+                    <a href="{% url 'reject_event' event.id %}">Reddet</a>
                 </li>
             {% endfor %}
         </ul>

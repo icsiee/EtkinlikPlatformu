@@ -13,14 +13,16 @@ urlpatterns = [
     path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),  # Admin dashboard
     path('user_login/', views.user_login, name='user_login'),
     path('edit_user/<int:user_id>/', views.edit_user, name='edit_user'),
-    path('dashboard/event/list/', views.event_list, name='event_list'),
+    path('events/', views.event_list, name='event_list'),  # Bu URL ile etkinlikler listelenir
     path('events/add/', views.event_add, name='event_add'),
-    path('create/', views.create_event, name='create_event'),
+    path('event/create/', views.create_event, name='create_event'),
     path('dashboard/event/create/', views.create_event, name='create_event'),
     path('admin/', admin.site.urls),
     path('edit/<int:event_id>/', views.edit_event, name='edit_event'),  # Etkinlik düzenleme
-    path('delete/<int:event_id>/', views.delete_event, name='delete_event'),  # Etkinlik silme
     path('join_event/<int:event_id>/', views.join_event, name='join_event'),
-
+path('events/', views.event_list, name='event_list'),
+    path('event/approve/<int:event_id>/', views.approve_event, name='approve_event'),
+    path('event/reject/<int:event_id>/', views.reject_event, name='reject_event'),
+    path('event/delete/<int:event_id>/', views.delete_event, name='delete_event'),
     # Other paths for logout, etc.
 ]

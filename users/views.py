@@ -107,71 +107,6 @@ def password_reset_view(request):
     return render(request, 'users/password_reset.html', {'form': form})
 
 
-
-
-
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from .models import Event, UserEvent
-from django.contrib import messages
-
-
-
-from django.db.models import Sum  # Import the Sum function for aggregation
-
-from django.shortcuts import render
-from .models import Event, UserEvent, Points
-
-from django.shortcuts import render
-from django.db.models import Sum
-from .models import Event, UserEvent, Points
-
-from django.shortcuts import render
-from .models import User, Event, Participant, Points
-
-from django.shortcuts import render
-from .models import User, Event, Participant, Points
-
-from django.shortcuts import render
-from .models import Event, Participant, User
-
-
-def user_dashboard(request):
-    user = request.user
-
-    # Kullanıcının oluşturduğu etkinlikleri al
-    created_events = Event.objects.filter(created_by=user)
-
-    # Kullanıcının katıldığı etkinlikleri al
-    user_events = Event.objects.filter(participants__user=user)
-
-    # Katılabileceği diğer etkinlikleri al (kendi oluşturduğu etkinlikler hariç)
-    available_events = Event.objects.exclude(created_by=user)  # Kullanıcının oluşturduğu etkinlikleri hariç tut
-
-    # Kullanıcının etkinlik sayısını ve toplam puanını hesapla
-    user_events_count = user_events.count()
-    user_created_events_count = created_events.count()
-    participation_points = user_events_count * 10  # Her etkinlik için 10 puan
-    creation_points = user_created_events_count * 15  # Her etkinlik oluşturma için 15 puan
-    first_participation_bonus = 20 if user_events_count > 0 else 0  # İlk katılım bonusu
-    total_points = participation_points + creation_points + first_participation_bonus
-
-    context = {
-        'user_events_count': user_events_count,
-        'user_created_events_count': user_created_events_count,
-        'total_points': total_points,
-        'user_events': user_events,
-        'created_events': created_events,
-        'available_events': available_events,  # Diğer etkinlikler
-        'first_participation_bonus': first_participation_bonus,
-    }
-
-    return render(request, 'users/user_dashboard.html', context)
-
-
-from django.shortcuts import get_object_or_404, redirect
-from .models import Event, Participant
-
 from django.shortcuts import get_object_or_404, redirect
 from .models import Event, Participant
 
@@ -199,6 +134,38 @@ from django.shortcuts import redirect
 def user_logout(request):
     logout(request)
     return redirect('user_login')  # Redirect to the login page after logout
+
+
+from django.shortcuts import render, redirect
+from .models import Event, User
+from django.contrib import messages
+
+
+from django.shortcuts import render
+from .models import Event
+
+def user_dashboard(request):
+    user = request.user
+    # Get the events created by the user
+    created_events = Event.objects.filter(created_by=user)
+
+    # Get the events the user has joined
+    user_events_count = user.events.count()  # This will count events the user has joined
+    user_created_events_count = created_events.count()  # This will count events the user has created
+    total_points = user.points  # Assuming you have points field for the user
+
+    # Get approved events that the user hasn't created
+    available_events = Event.objects.filter(status='approved').exclude(created_by=user)
+
+    context = {
+        'user_events_count': user_events_count,
+        'user_created_events_count': user_created_events_count,
+        'total_points': total_points,
+        'created_events': created_events,
+        'available_events': available_events,
+    }
+
+    return render(request, 'users/user_dashboard.html', context)
 
 
 
@@ -242,10 +209,73 @@ def edit_user(request, user_id):
     return render(request, 'edit_user.html', {'user': user})
 
 
-# Etkinlik Listeleme View'i
+from django.shortcuts import render
+from .models import Event
+
+from django.shortcuts import render
+from .models import Event
+
 def event_list(request):
-    events = Event.objects.filter(created_by=request.user)  # Kullanıcıya ait etkinlikleri listele
-    return render(request, 'admin/event_list.html', {'events': events})
+    # Kullanıcının onay bekleyen etkinlikleri ve onaylanan etkinlikleri listelemesi
+    pending_events = Event.objects.filter(status='pending')
+    approved_events = Event.objects.filter(status='approved')
+
+    # Bu view'de sadece onaylı ve onay bekleyen etkinlikler listelenir
+    return render(request, 'admin/event_list.html', {
+        'pending_events': pending_events,
+        'approved_events': approved_events,
+    })
+
+def delete_event(request, event_id):
+    # Etkinliği silmek için bir fonksiyon
+    event = Event.objects.get(id=event_id)
+    if event.status == 'rejected':  # Eğer etkinlik reddedildiyse
+        event.delete()  # Etkinlik veritabanından silinir
+    return redirect('admin/event_list')  # Etkinlikler sayfasına yönlendirme
+
+
+from django.contrib import messages
+from django.shortcuts import redirect
+from .models import Event, Points
+
+from .models import Points
+
+from django.shortcuts import redirect
+from .models import Event, Points
+
+
+from django.shortcuts import redirect
+from django.contrib import messages
+
+def approve_event(request, event_id):
+    # Etkinliği al
+    event = Event.objects.get(id=event_id)
+
+    # Etkinliği onayla
+    event.status = 'approved'
+    event.save()
+
+    # Etkinliği oluşturan kullanıcıyı al
+    user = event.created_by
+
+    # Kullanıcı admin değilse puan ekle
+    if not user.is_admin:  # Admin kullanıcıyı kontrol et
+        points_entry = Points(user=user, score=15)
+        points_entry.save()
+
+    # Etkinlik onaylandığında kullanıcıya başarı mesajı göster
+    messages.success(request, 'Etkinlik başarıyla onaylandı.')
+
+    # Onay işleminden sonra etkinlik listesine yönlendir
+    return redirect('event_list')  # 'event_list' URL adı ile yönlendir
+
+
+
+def reject_event(request, event_id):
+    event = Event.objects.get(id=event_id)
+    event.status = 'rejected'
+    event.save()
+    return redirect('event_list')
 
 # Etkinlik Ekleme/Düzenleme View'i
 from django.shortcuts import render, redirect

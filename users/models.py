@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 # İlgi Alanları Modeli
 class Interest(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)  # description isteğe bağlı
 
     def __str__(self):
         return self.name
@@ -27,6 +27,8 @@ class UserManager(BaseUserManager):
         return self.create_user(username, email, password, **extra_fields)
 
 class User(AbstractUser):
+    points = models.ManyToManyField('Points', related_name='users', blank=True)
+
     name = models.CharField(max_length=50)
     surname = models.CharField(max_length=50)
     birth_date = models.DateField(null=True, blank=True)
@@ -39,8 +41,9 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
-    is_admin = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=False)  # Bu alanı kaldırabilirsiniz.
     interests = models.ManyToManyField('Interest', blank=True)
+    events = models.ManyToManyField('Event', through='Participant', related_name='participants')
 
     objects = UserManager()
 
@@ -57,6 +60,12 @@ class Event(models.Model):
         ('art', 'Sanat'),
     ]
 
+    STATUS_CHOICES = [
+        ('pending', 'Onay Bekliyor'),
+        ('approved', 'Onaylanmış'),
+        ('rejected', 'Reddedilmiş'),
+    ]
+
     name = models.CharField(max_length=100)  # Etkinlik adı
     description = models.TextField()  # Etkinlik açıklaması
     date = models.DateField()  # Etkinlik tarihi
@@ -71,26 +80,23 @@ class Event(models.Model):
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_events')  # Düzenlendi
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='pending'  # Varsayılan değer "Onay Bekliyor"
+    )
 
     def __str__(self):
         return self.name
 
-# Kullanıcı Etkinlik Modeli (Katılımı ve oluşturduğu etkinlikleri ilişkilendirir)
-class UserEvent(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_events')  # Düzenlendi
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='user_participants')  # Düzenlendi
+# Katılımcı Modeli
+class Participant(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    joined_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'{self.user.username} - {self.event.name}'
-
-# Katılımcı Modeli (Etkinlik katılımlarını tutar)
-class Participant(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='participations')  # Kullanıcı
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='participants')  # Etkinlik
-    join_date = models.DateTimeField(auto_now_add=True)  # Katılım tarihi
-
-    def __str__(self):
-        return f"{self.user.username} - {self.event.name}"  # Etkinlik adı düzeltilmiş
 
 # Mesaj Modeli
 class Message(models.Model):
@@ -103,10 +109,12 @@ class Message(models.Model):
         return f"Message from {self.sender.username} in {self.event.name}"
 
 # Puan Sistemi Modeli
+from django.conf import settings
+
 class Points(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='points')  # Kullanıcı
-    score = models.PositiveIntegerField()  # Puan
-    date_earned = models.DateTimeField(auto_now_add=True)  # Puan kazanılma tarihi
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_points')  # related_name değiştirilmiştir
+    score = models.IntegerField()
+    date_awarded = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username}: {self.score} points"
+        return f'{self.user.username} - {self.score} points'

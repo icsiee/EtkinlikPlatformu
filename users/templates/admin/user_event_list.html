@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <h2>Etkinliklerim</h2>
+<ul>
+    {% for event in events %}
+        <li>
+            <strong>{{ event.name }}</strong><br>
+            Tarih: {{ event.date }}<br>
+            Saat: {{ event.time }}<br>
+            Konum: {{ event.location }}<br>
+            Durum: {{ event.get_status_display }}
+        </li>
+    {% endfor %}
+</ul>
+
+</head>
+<body>
+
+</body>
+</html>
