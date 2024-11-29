@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etkinlik Detayları</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+        }
+        .event-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #34495e;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            color: #ecf0f1;
+            text-align: center;
+        }
+        .event-detail {
+            margin-top: 20px;
+        }
+        .button {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="event-container">
+        <h1>{{ event.name }}</h1>
+        <div class="event-detail">
+            <p><strong>Tarih:</strong> {{ event.date }}</p>
+            <p><strong>Lokasyon:</strong> {{ event.location }}</p>
+            <p><strong>Detaylar:</strong> {{ event.description }}</p>
+            <p><strong>Oluşturan:</strong> {{ event.created_by.username }}</p>
+            <p><strong>Durum:</strong>
+                {% if event.status == 'approved' %} Onaylandı
+                {% else %} Onay Bekliyor
+                {% endif %}
+            </p>
+        </div>
+        <a href="{% url 'join_event' event.id %}" class="button">Etkinliğe Katıl</a>
+    </div>
+</body>
+</html>

@@ -55,7 +55,7 @@
             text-decoration: none;
             border-radius: 5px;
             margin-top: 20px;
-            display: block;
+            display: inline-block;
             text-align: center;
         }
         .button:hover {
@@ -80,6 +80,11 @@
 <body>
 
     <h2>Hoşgeldiniz!</h2>
+
+    <!-- Anasayfa Butonu -->
+    <div class="dashboard-container">
+        <a href="{% url 'login' %}" class="button">Anasayfa</a>
+    </div>
 
     <div class="dashboard-container">
         <div class="dashboard-panel">
@@ -117,13 +122,16 @@
             <h3>Oluşturduğunuz Etkinlikler</h3>
             <ul>
                 {% for event in created_events %}
-                    <li>{{ event.name }} - {{ event.date }} - {{ event.location }}<br>
+                    <li>
+                        <a href="{% url 'event_detail' event.id %}">{{ event.name }}</a> - {{ event.date }} - {{ event.location }}<br>
                         Durum: {% if event.status == 'approved' %} Onaylandı {% else %} Onay Bekliyor {% endif %}
+                        <a href="{% url 'update_event' event.id %}" class="button">Düzenle</a>
                     </li>
                 {% endfor %}
             </ul>
         </div>
     </div>
+
 
     <!-- Katılabileceğiniz Etkinlikler -->
     <div class="dashboard-container">
@@ -131,13 +139,15 @@
             <h3>Katılabileceğiniz Etkinlikler</h3>
             <ul>
                 {% for event in available_events %}
-                    <li>{{ event.name }} - {{ event.date }} - {{ event.location }}
+                    <li>
+                        <a href="{% url 'event_detail' event.id %}">{{ event.name }}</a> - {{ event.date }} - {{ event.location }}
                         <a href="{% url 'join_event' event.id %}">Katıl</a>
                     </li>
                 {% endfor %}
             </ul>
         </div>
     </div>
+
 
 </body>
 </html>

@@ -14,7 +14,6 @@ urlpatterns = [
     path('user_login/', views.user_login, name='user_login'),
     path('edit_user/<int:user_id>/', views.edit_user, name='edit_user'),
     path('events/', views.event_list, name='event_list'),  # Bu URL ile etkinlikler listelenir
-    path('events/add/', views.event_add, name='event_add'),
     path('event/create/', views.create_event, name='create_event'),
     path('dashboard/event/create/', views.create_event, name='create_event'),
     path('admin/', admin.site.urls),
@@ -24,5 +23,9 @@ path('events/', views.event_list, name='event_list'),
     path('event/approve/<int:event_id>/', views.approve_event, name='approve_event'),
     path('event/reject/<int:event_id>/', views.reject_event, name='reject_event'),
     path('event/delete/<int:event_id>/', views.delete_event, name='delete_event'),
+    path('event/<int:event_id>/', views.event_detail, name='event_detail'),  # Etkinlik detay URL'si
+    path('event/<int:event_id>/edit/', views.update_event, name='update_event'),  # Etkinlik düzenleme URL'si
+path('event/map/', views.user_event_map, name='create_event'),  # Yeni etkinlik oluşturma
+    path('event/map/<int:event_id>/', views.user_event_map, name='edit_event'),  # Etkinlik düzenleme
     # Other paths for logout, etc.
 ]
