@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reddedilen Etkinlikler</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #2c3e50; /* Koyu tema */
+            color: #ecf0f1;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ecf0f1;
+            text-align: left;
+        }
+        th {
+            background-color: #34495e;
+        }
+        a.button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        a.button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reddedilen Etkinlikler</h1>
+
+    {% if rejected_events %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Etkinlik Adı</th>
+                    <th>Tarih</th>
+                    <th>Konum</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in rejected_events %}
+                <tr>
+                    <td>{{ event.name }}</td>
+                    <td>{{ event.date }}</td>
+                    <td>{{ event.location }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Şu anda reddedilmiş bir etkinliğiniz yok.</p>
+    {% endif %}
+
+    <a href="{% url 'user_dashboard' %}" class="button">Dashboard'a Dön</a>
+</body>
+</html>

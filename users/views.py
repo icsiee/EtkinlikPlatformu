@@ -92,27 +92,33 @@ def signup_view(request):
 @csrf_exempt
 def password_reset_view(request):
     if request.method == 'POST':
-        form = PasswordResetForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Parola sıfırlama talimatları gönderildi!")
-            return redirect('login')
+
+        username=request.POST.get("username")
+        password=request.POST.get("password")
+        print(username,password)
+        user=User.objects.filter(username=username).first()
+        print(user)
+        if user:
+            user.set_password(password)
+            user.save()
+        messages.success(request, "Parola sıfırlama talimatları gönderildi!")
+        return redirect('login')
     else:
         form = PasswordResetForm()
 
-    return render(request, 'users/password_reset.html', {'form': form})
-
+    return render(request, 'users/password_reset.html', )
 
 
 def join_event(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     user = request.user
 
-    # Kullanıcıyı etkinliğe katılanlar listesine ekle
-    if not Participant.objects.filter(user=user, event=event).exists():
-        Participant.objects.create(user=user, event=event)
+    if event not in user.events.all():
+        user.events.add(event)
+        handle_event_join(user, event)
+        handle_first_join_event(user, event)
 
-    return redirect('user_dashboard')  # Kullanıcıyı dashboard'a yönlendir
+    return redirect('user_dashboard')
 
 
 @csrf_exempt
@@ -133,20 +139,28 @@ from .models import Event, Points
 from django.db import models
 
 
+from django.db.models import Sum
+from .models import Event, Points
+
 def user_dashboard(request):
     user = request.user
 
     # Kullanıcının oluşturduğu etkinlikler
     created_events = Event.objects.filter(created_by=user)
 
-    # Kullanıcının katılabileceği etkinlikler
+    # Kullanıcının katılabileceği etkinlikler (onaylanmış, kendisinin oluşturmadığı)
     available_events = Event.objects.filter(status='approved').exclude(created_by=user)
 
-    # Kullanıcının puanını ve diğer bilgileri hesapla
-    total_points = Points.objects.filter(user=user).aggregate(total=models.Sum('score'))['total'] or 0
-    user_events_count = user.events.count()  # Katıldığı etkinlik sayısı
-    user_created_events_count = created_events.count()  # Oluşturduğu etkinlik sayısı
+    # Kullanıcının toplam puanı
+    total_points = Points.objects.filter(user=user).aggregate(total=Sum('score'))['total'] or 0
 
+    # Kullanıcının katıldığı etkinlik sayısı
+    user_events_count = user.events.count()
+
+    # Kullanıcının admin tarafından onaylanmış etkinliklerinin sayısı
+    user_created_events_count = created_events.filter(status='approved').count()
+
+    # Bağlama verileri (context)
     context = {
         'created_events': created_events,
         'available_events': available_events,
@@ -168,12 +182,6 @@ def admin_dashboard(request):
     return render(request, 'admin_dashboard.html', {'users': users})
 
 
-
-
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import User
-
-from django.db import IntegrityError
 
 
 from django.db import IntegrityError
@@ -283,7 +291,6 @@ def delete_event(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     if request.method == 'POST':
         event.delete()
-        messages.success(request, "Etkinlik başarıyla silindi!")
         return redirect('event_list')
 
     return render(request, 'events/delete_event.html', {'event': event})
@@ -441,5 +448,74 @@ def edit_interest(request, interest_id):
 
     return render(request, 'users/edit_interest.html', {'form': form})
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import Event
+
+def dashboard(request):
+    created_events = Event.objects.filter(created_by=request.user)
+    available_events = Event.objects.exclude(created_by=request.user)
+    user_events_count = created_events.count()
+    user_created_events_count = created_events.count()
+
+    context = {
+        'created_events': created_events,
+        'available_events': available_events,
+        'user_events_count': user_events_count,
+        'user_created_events_count': user_created_events_count,
+        'total_points': calculate_user_points(request.user),  # Burada çağrılıyor
+    }
+    return render(request, 'users/user_dashboard.html', context)
+
+def resubmit_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id, created_by=request.user)
+
+    if event.status == 'rejected':
+        event.status = 'pending'  # Durumu "Onay Bekliyor" olarak güncelle
+        event.save()
+        messages.success(request, f"'{event.name}' etkinliği tekrar onaya gönderildi.")
+    else:
+        messages.error(request, "Bu etkinliği tekrar gönderemezsiniz.")
+
+    return redirect('user_dashboard')
+
+
+def calculate_user_points(user):
+    total_points = user.user_points.aggregate(total=models.Sum('score'))['total'] or 0
+    joined_events_count = user.events.count()
+    created_events_count = user.created_events.filter(status='approved').count()
+
+    return {
+        'total_points': total_points,
+        'joined_events_count': joined_events_count,
+        'created_events_count': created_events_count,
+    }
+
+def add_points(user, score, point_type):
+    Points.objects.create(user=user, score=score, point_type=point_type)
+
+def handle_first_join_event(user, event):
+    if user.events.count() == 0:  # Kullanıcının ilk etkinliği
+        add_points(user, 20, 'first_join_bonus')
+
+def handle_event_join(user, event):
+    add_points(user, 10, 'join_event')
+
+
+def handle_approved_event(event):
+    if event.status == 'approved':
+        add_points(event.created_by, 15, 'create_event')
+
+
+
+
+def rejected_events(request):
+    # Kullanıcı tarafından oluşturulmuş reddedilen etkinlikleri al
+    rejected_events = Event.objects.filter(created_by=request.user, status='rejected')
+
+    context = {
+        'rejected_events': rejected_events,
+    }
+    return render(request, 'users/rejected_events.html', context)
 
 

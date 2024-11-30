@@ -33,6 +33,8 @@ path('event/map/', views.user_event_map, name='create_event'),  # Yeni etkinlik 
     path('add_interest/', views.add_interest, name='add_interest'),  # Yeni ilgi alanı ekle
     path('interest/<int:interest_id>/delete/', views.delete_interest, name='delete_interest'),
     path('interest/<int:interest_id>/edit/', views.edit_interest, name='edit_interest'),
+    path('event/<int:event_id>/resubmit/', views.resubmit_event, name='resubmit_event'),
+    path('dashboard/rejected-events/', views.rejected_events, name='rejected_events'),
 
     # Other paths for logout, etc.
 ]

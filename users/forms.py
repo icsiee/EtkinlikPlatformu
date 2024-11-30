@@ -82,3 +82,4 @@ class InterestForm(forms.ModelForm):
         model = Interest
         fields = ['name', 'description']
 
+

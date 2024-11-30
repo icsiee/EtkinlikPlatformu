@@ -111,10 +111,28 @@ class Message(models.Model):
 # Puan Sistemi Modeli
 from django.conf import settings
 
+from django.conf import settings
+from django.db import models
+
 class Points(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_points')  # related_name değiştirilmiştir
+    POINT_TYPE_CHOICES = [
+        ('join_event', 'Etkinliğe Katılım'),
+        ('create_event', 'Etkinlik Oluşturma'),
+        ('first_join_bonus', 'İlk Katılım Bonusu'),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='user_points'
+    )
     score = models.IntegerField()
+    point_type = models.CharField(
+        max_length=20,
+        choices=POINT_TYPE_CHOICES,
+        default='join_event'  # Varsayılan değer
+    )
     date_awarded = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.user.username} - {self.score} points'
+        return f'{self.user.username} - {self.score} points ({self.point_type})'

@@ -83,7 +83,7 @@
 
     <!-- Anasayfa Butonu -->
     <div class="dashboard-container">
-        <a href="{% url 'login' %}" class="button">Anasayfa</a>
+        <a href="{% url 'login' %}" class="button">Girişe Dön</a>
     </div>
 
     <div class="dashboard-container">
@@ -103,18 +103,15 @@
         </div>
     </div>
 
-    <!-- Kullanıcının Puan Durumu -->
-    <div class="dashboard-container">
-        <div class="points-section">
-            <h4>Toplam Puanınız:</h4>
-            <p>Katıldığınız Etkinlik Sayısı: <span class="points">{{ user_events_count }} etkinlik</span></p>
-            <p>Oluşturduğunuz Etkinlik Sayısı: <span class="points">{{ user_created_events_count }} etkinlik</span></p>
-            <p>İlk Katılım Bonusu: <span class="points">20 puan</span></p>
+<!-- Kullanıcının Puan Durumu -->
+<div>
+    <h3>Kullanıcı Bilgileriniz</h3>
+    <p>Katıldığınız Etkinlik Sayısı: {{ user_events_count }}</p>
+    <p>Oluşturduğunuz ve Onaylanan Etkinlik Sayısı: {{ user_created_events_count }}</p>
+    <p>Toplam Puanınız: {{ total_points }}</p>
+</div>
 
-            <h4>Toplam Puanınız:</h4>
-            <p><strong>{{ total_points }} puan</strong></p>
-        </div>
-    </div>
+
 
     <!-- Kullanıcının Oluşturduğu Etkinlikler -->
     <div class="dashboard-container">
@@ -131,6 +128,13 @@
             </ul>
         </div>
     </div>
+
+    <div class="dashboard-container">
+    <div class="dashboard-panel">
+        <a href="{% url 'rejected_events' %}" class="button">Reddedilen Etkinlikler</a>
+    </div>
+</div>
+
 
 
     <!-- Katılabileceğiniz Etkinlikler -->
