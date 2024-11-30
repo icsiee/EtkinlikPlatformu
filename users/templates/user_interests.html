@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanıcı İlgi Alanları</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Kullanıcı İlgi Alanları</h1>
+
+        <!-- Anasayfa Butonu -->
+        <a href="{% url 'admin_dashboard' %}" class="btn">Anasayfa</a>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>İlgi Alanı Adı</th>
+                    <th>Açıklama</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for interest in interests %}
+                <tr>
+                    <td>{{ interest.name }}</td>
+                    <td>{{ interest.description }}</td>
+                    <td>
+                        <a href="{% url 'edit_interest' interest.id %}" class="btn btn-warning">Düzenle</a>
+                        <form method="POST" action="{% url 'delete_interest' interest.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Sil</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'add_interest' %}" class="btn">Yeni İlgi Alanı Ekle</a>
+    </div>
+</body>
+</html>

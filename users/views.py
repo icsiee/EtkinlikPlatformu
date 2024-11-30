@@ -5,13 +5,6 @@ from .models import Event, User
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import csrf_exempt
-from .forms import CustomUserCreationForm
-from .models import Event, Points
-from .forms import EventCreationForm
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Event
-from .forms import EventForm
-from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -325,7 +318,8 @@ def event_detail(request, event_id):
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from .models import Event
-from .forms import EventForm
+# users/views.py
+
 
 def update_event(request, event_id):
     # Etkinliği al, ancak yalnızca oluşturan kullanıcı erişebilsin
@@ -345,7 +339,7 @@ def update_event(request, event_id):
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from .forms import EventForm
+from .forms import EventForm, CustomUserCreationForm, InterestForm
 from .models import Event
 
 
@@ -402,10 +396,50 @@ def user_detail(request, user_id):
         'created_events': created_events,
     })
 
+# views.py
+from django.shortcuts import render, redirect
+from .models import Interest
+
+# İlgi Alanlarını Listeleme
+def user_interests(request):
+    interests = Interest.objects.all()  # Tüm ilgi alanlarını al
+    return render(request, 'user_interests.html', {'interests': interests})
+
+def add_interest(request):
+    if request.method == 'POST':
+        form = InterestForm(request.POST)
+        if form.is_valid():
+            form.save()  # Yeni ilgi alanı kaydet
+            return redirect('user_interests')  # İlgi alanları sayfasına yönlendir
+    else:
+        form = InterestForm()
+    return render(request, 'add_interest.html', {'form': form})
 
 
+def delete_interest(request, interest_id):
+    # İlgili ilgi alanını al
+    interest = get_object_or_404(Interest, id=interest_id)
+
+    # Silme işlemi
+    if request.method == 'POST':
+        interest.delete()
+        return redirect('user_interests')  # İlgi alanları sayfasına geri yönlendir
+
+    return render(request, 'user_interests.html', {'interest': interest})
 
 
+def edit_interest(request, interest_id):
+    interest = get_object_or_404(Interest, id=interest_id)
+
+    if request.method == 'POST':
+        form = InterestForm(request.POST, instance=interest)
+        if form.is_valid():
+            form.save()
+            return redirect('user_interests')  # Düzenleme sonrası ilgi alanları sayfasına yönlendir
+    else:
+        form = InterestForm(instance=interest)
+
+    return render(request, 'users/edit_interest.html', {'form': form})
 
 
 

@@ -29,6 +29,10 @@ path('events/', views.event_list, name='event_list'),
 path('event/map/', views.user_event_map, name='create_event'),  # Yeni etkinlik oluşturma
     path('event/map/<int:event_id>/', views.user_event_map, name='edit_event'),  # Etkinlik düzenleme
     path('user/<int:user_id>/', user_detail, name='user_detail'),
+    path('interests/', views.user_interests, name='user_interests'),  # İlgi alanlarını listele
+    path('add_interest/', views.add_interest, name='add_interest'),  # Yeni ilgi alanı ekle
+    path('interest/<int:interest_id>/delete/', views.delete_interest, name='delete_interest'),
+    path('interest/<int:interest_id>/edit/', views.edit_interest, name='edit_interest'),
 
     # Other paths for logout, etc.
 ]
