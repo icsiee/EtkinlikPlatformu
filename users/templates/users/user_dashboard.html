@@ -86,15 +86,10 @@
         <a href="{% url 'login' %}" class="button">Girişe Dön</a>
     </div>
 
+
     <div class="dashboard-container">
         <div class="dashboard-panel">
-            {% if messages %}
-                <ul>
-                    {% for message in messages %}
-                        <li class="success">{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+
             <h3>Dashboard</h3>
             <p>Burada etkinliklerinizi yönetebilirsiniz.</p>
 
@@ -135,7 +130,13 @@
     </div>
 </div>
 
-
+ {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <li class="success">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
 
     <!-- Katılabileceğiniz Etkinlikler -->
     <div class="dashboard-container">

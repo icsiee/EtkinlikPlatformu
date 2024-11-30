@@ -109,16 +109,6 @@ def password_reset_view(request):
     return render(request, 'users/password_reset.html', )
 
 
-def join_event(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
-    user = request.user
-
-    if event not in user.events.all():
-        user.events.add(event)
-        handle_event_join(user, event)
-        handle_first_join_event(user, event)
-
-    return redirect('user_dashboard')
 
 
 @csrf_exempt
@@ -242,25 +232,51 @@ def delete_event(request, event_id):
 
 
 
-def approve_event(request, event_id):
-    # Etkinliği al
-    event = Event.objects.get(id=event_id)
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import Event
 
-    # Etkinliği onayla
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import Event, Points, Message
+from django.utils import timezone
+
+def approve_event(request, event_id):
+    # Kullanıcının yönetici olup olmadığını kontrol et
+    if not request.user.is_staff:
+        messages.error(request, "Bu işlemi gerçekleştirme yetkiniz yok.")
+        return redirect('user_dashboard')
+
+    # Etkinlik bulunur
+    event = get_object_or_404(Event, id=event_id)
+
+    # Etkinlik durumu onaylandı
     event.status = 'approved'
     event.save()
 
-    # Etkinliği oluşturan kullanıcıyı al
-    user = event.created_by
+    # Etkinliği oluşturan kullanıcıya 15 puan ekle
+    creator = event.created_by
+    add_points(creator, 15, 'create_event')
 
-    # Kullanıcı admin değilse puan ekle
-    if not user.is_admin:  # Admin kullanıcıyı kontrol et
-        points_entry = Points(user=user, score=15)
-        points_entry.save()
+    # Etkinlik için bir mesaj oluştur
+    Message.objects.create(
+        sender=request.user,  # Yönetici mesajı gönderen
+        event=event,
+        text=f"{event.name} etkinliği onaylandı ve 15 puan kazandınız.",
+        sent_at=timezone.now()
+    )
 
+    messages.success(request, f"{event.name} etkinliği başarıyla onaylandı.")
+    return redirect('admin_dashboard')  # Yönetici paneline yönlendirin
 
-    # Onay işleminden sonra etkinlik listesine yönlendir
-    return redirect('event_list')  # 'event_list' URL adı ile yönlendir
+def add_points(user, points, point_type):
+    # Kullanıcıya puan ekleyen fonksiyon
+    Points.objects.create(
+        user=user,
+        score=points,
+        point_type=point_type
+    )
+
 
 
 def reject_event(request, event_id):
@@ -491,8 +507,7 @@ def calculate_user_points(user):
         'created_events_count': created_events_count,
     }
 
-def add_points(user, score, point_type):
-    Points.objects.create(user=user, score=score, point_type=point_type)
+
 
 def handle_first_join_event(user, event):
     if user.events.count() == 0:  # Kullanıcının ilk etkinliği
@@ -518,4 +533,30 @@ def rejected_events(request):
     }
     return render(request, 'users/rejected_events.html', context)
 
+
+def join_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    user = request.user
+
+    # Kullanıcının etkinliğe daha önce katılıp katılmadığını kontrol et
+    if event in user.events.all():
+        messages.warning(request, 'Bu etkinliğe zaten katıldınız!')
+    else:
+        # Kullanıcı etkinliğe ilk kez katılıyor
+        user.events.add(event)
+
+        # İlk katılım kontrolü
+        first_join_bonus_exists = Points.objects.filter(
+            user=user, point_type='first_join_bonus'
+        ).exists()
+
+        if not first_join_bonus_exists:
+            add_points(user, 20, 'first_join_bonus')
+            messages.success(request, 'İlk etkinliğinize katıldığınız için 20 puan kazandınız!')
+
+        # Normal katılım puanı ekle
+        add_points(user, 10, 'join_event')
+        messages.success(request, f'{event.name} etkinliğine başarıyla katıldınız!')
+
+    return redirect('user_dashboard')
 

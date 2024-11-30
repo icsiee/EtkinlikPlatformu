@@ -1,23 +1,23 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.conf import settings
 
 # İlgi Alanları Modeli
 class Interest(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True, null=True)  # description isteğe bağlı
+    description = models.TextField(blank=True, null=True)  # İsteğe bağlı açıklama
 
     def __str__(self):
         return self.name
 
-# Kullanıcı Modeli
+# Kullanıcı Yönetim Modeli
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
         if not email:
-            raise ValueError('Email field must be set')
+            raise ValueError('Email alanı zorunludur.')
         email = self.normalize_email(email)
         user = self.model(username=username, email=email, **extra_fields)
-        if password:
-            user.set_password(password)  # Parola şifrelenerek kaydedilir
+        user.set_password(password)  # Şifrelenmiş şekilde kaydedilir
         user.save(using=self._db)
         return user
 
@@ -26,9 +26,8 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(username, email, password, **extra_fields)
 
+# Kullanıcı Modeli
 class User(AbstractUser):
-    points = models.ManyToManyField('Points', related_name='users', blank=True)
-
     name = models.CharField(max_length=50)
     surname = models.CharField(max_length=50)
     birth_date = models.DateField(null=True, blank=True)
@@ -41,9 +40,11 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
-    is_admin = models.BooleanField(default=False)  # Bu alanı kaldırabilirsiniz.
     interests = models.ManyToManyField('Interest', blank=True)
-    events = models.ManyToManyField('Event', through='Participant', related_name='participants')
+    points = models.ManyToManyField('Points', related_name='users', blank=True)
+    events = models.ManyToManyField(
+        'Event', through='Participant', related_name='participants', blank=True
+    )
 
     objects = UserManager()
 
@@ -79,7 +80,9 @@ class Event(models.Model):
     )
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_events')  # Düzenlendi
+    created_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='created_events'
+    )
     status = models.CharField(
         max_length=10,
         choices=STATUS_CHOICES,
@@ -100,20 +103,19 @@ class Participant(models.Model):
 
 # Mesaj Modeli
 class Message(models.Model):
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')  # Mesajı gönderen kullanıcı
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='event_messages')  # Etkinlik
-    text = models.TextField()  # Mesaj içeriği
-    sent_at = models.DateTimeField(auto_now_add=True)  # Gönderilme zamanı
+    sender = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='sent_messages'
+    )
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name='event_messages'
+    )
+    text = models.TextField()
+    sent_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Message from {self.sender.username} in {self.event.name}"
 
 # Puan Sistemi Modeli
-from django.conf import settings
-
-from django.conf import settings
-from django.db import models
-
 class Points(models.Model):
     POINT_TYPE_CHOICES = [
         ('join_event', 'Etkinliğe Katılım'),
@@ -122,15 +124,11 @@ class Points(models.Model):
     ]
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='user_points'
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_points'
     )
     score = models.IntegerField()
     point_type = models.CharField(
-        max_length=20,
-        choices=POINT_TYPE_CHOICES,
-        default='join_event'  # Varsayılan değer
+        max_length=20, choices=POINT_TYPE_CHOICES, default='join_event'
     )
     date_awarded = models.DateTimeField(auto_now_add=True)
 
