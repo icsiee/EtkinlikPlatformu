@@ -108,6 +108,7 @@ def signup_view(request):
 @csrf_exempt
 def password_reset_view(request):
     if request.method == 'POST':
+<<<<<<< Updated upstream
         form = PasswordResetForm(request.POST)
         if form.is_valid():
             form.save(request.POST)
@@ -115,6 +116,22 @@ def password_reset_view(request):
     else:
         form = PasswordResetForm()
     return render(request, 'users/password_reset.html', {'form': form})
+=======
+        username=request.POST.get("username")
+        password=request.POST.get("password")
+        print(username,password)
+        user=User.objects.filter(username=username).first()
+        print(user)
+        if user:
+            user.set_password(password)
+            user.save()
+        messages.success(request, "Parola sıfırlama talimatları gönderildi!")
+        return redirect('login')
+    else:
+        form = PasswordResetForm()
+
+    return render(request, 'users/password_reset.html', )
+>>>>>>> Stashed changes
 
 
 @csrf_exempt
