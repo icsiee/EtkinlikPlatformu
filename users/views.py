@@ -333,10 +333,6 @@ def create_event(request):
 from django.shortcuts import render, get_object_or_404
 from .models import Event
 
-def event_detail(request, event_id):
-    # Belirtilen etkinliği al veya 404 döndür
-    event = get_object_or_404(Event, id=event_id)
-    return render(request, 'users/event_detail.html', {'event': event})
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
@@ -559,4 +555,60 @@ def join_event(request, event_id):
         messages.success(request, f'{event.name} etkinliğine başarıyla katıldınız!')
 
     return redirect('user_dashboard')
+
+from django.shortcuts import render
+
+def event_detail(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    messages = event.event_messages.all()  # Etkinlikle ilişkili mesajlar
+
+    return render(request, 'event_detail.html', {
+        'event': event,
+        'messages': messages
+    })
+
+from django.http import HttpResponseRedirect
+
+def send_message(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
+    if request.method == 'POST':
+        message_text = request.POST['message']
+        Message.objects.create(
+            sender=request.user,  # Şu anki kullanıcı
+            event=event,
+            text=message_text
+        )
+
+        return HttpResponseRedirect(f'/event/{event.id}/')  # Yönlendirme
+
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Event, Message
+
+
+@login_required
+def event_chat(request, event_id):
+    # Etkinliği ve mesajları al
+    event = get_object_or_404(Event, id=event_id)
+
+    # Kullanıcının etkinliğe katılıp katılmadığını kontrol et
+    if event not in request.user.events.all():
+        return redirect('user_dashboard')  # Katılmadığı etkinliğe erişmeye çalışıyorsa ana sayfaya yönlendir
+
+    # Etkinliğe ait mesajları al
+    messages = Message.objects.filter(event=event)
+
+    # Mesaj gönderme işlemi
+    if request.method == "POST":
+        message_text = request.POST.get('message')
+        if message_text:
+            Message.objects.create(sender=request.user, event=event, text=message_text)
+
+    return render(request, 'event_chat.html', {
+        'event': event,
+        'messages': messages,
+    })
+
 

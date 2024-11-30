@@ -1,0 +1,25 @@
+{% extends 'base_generic.html' %}
+
+{% block content %}
+    <div class="container">
+        <h2 class="chat-header">{{ event.name }} - Chat</h2>
+
+        <!-- Mesajlar ve chat geçmişi -->
+        <div class="chat-container">
+            {% for message in messages %}
+                <div class="message">
+                    <strong class="sender">{{ message.sender.username }}:</strong>
+                    <p class="message-text">{{ message.text }}</p>
+                    <small class="sent-at">{{ message.sent_at }}</small>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Mesaj gönderme formu -->
+        <form method="post" class="chat-form">
+            {% csrf_token %}
+            <textarea name="message" placeholder="Mesajınızı yazın..." required class="message-input"></textarea>
+            <button type="submit" class="send-button">Gönder</button>
+        </form>
+    </div>
+{% endblock %}

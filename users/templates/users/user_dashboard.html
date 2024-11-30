@@ -106,6 +106,15 @@
     <p>Toplam Puanınız: {{ total_points }}</p>
 </div>
 
+<h2>Katıldığınız Etkinlikler</h2>
+<ul>
+    {% for event in user.events.all %}
+        <li>
+            <strong>{{ event.name }}</strong>
+            <a href="{% url 'event_chat' event.id %}">Chat</a>
+        </li>
+    {% endfor %}
+</ul>
 
 
     <!-- Kullanıcının Oluşturduğu Etkinlikler -->
