@@ -9,10 +9,7 @@ class EventForm(forms.ModelForm):
         widget=forms.TimeInput(format='%H:%M', attrs={'type': 'time'}),
         required=False
     )
-    category = forms.ChoiceField(
-        choices=Event.CATEGORY_CHOICES,  # Kategori seçenekleri
-        widget=forms.Select(attrs={'class': 'form-control'}),  # Combobox için Select widget'ı
-    )
+
 
     class Meta:
         model = Event
@@ -95,8 +92,6 @@ class UsernameResetForm(forms.Form):
     class MessageForm(forms.ModelForm):
         class Meta:
             model = Message
-            fields = ['content']
-
-        content = forms.CharField(widget=forms.Textarea(attrs={'placeholder': 'Mesajınızı buraya yazın...'}))
+            fields = ['content', 'event']
 
 

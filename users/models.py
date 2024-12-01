@@ -121,19 +121,30 @@ class Points(models.Model):
 
 
 class Event(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-    date = models.DateTimeField()
+    name = models.CharField(max_length=255)  # Etkinlik adı
+    description = models.TextField()  # Etkinlik açıklaması
+    duration = models.IntegerField()  # Süre (örneğin dakika olarak)
+    category = models.CharField(
+        max_length=50,
+        choices=[
+            ('conference', 'Conference'),
+            ('workshop', 'Workshop'),
+            ('seminar', 'Seminar'),
+        ]
+    )
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  # Enlem
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  # Boylam
+    location = models.CharField(max_length=255, null=True, blank=True)  # Konum bilgisi
 
     def __str__(self):
         return self.name
 
+
 class Message(models.Model):
-    event = models.ForeignKey(Event, related_name="messages", on_delete=models.CASCADE)
-    user = models.ForeignKey(User, related_name="messages", on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='messages')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Message from {self.user.username} on {self.event.name}"
-
+        return f"{self.user.username}: {self.content[:30]}"

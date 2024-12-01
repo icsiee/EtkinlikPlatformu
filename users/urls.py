@@ -23,5 +23,7 @@ urlpatterns = [
 
     path('password_reset/', PasswordResetView.as_view(), name='password_reset'),
 
+    path('event/<int:event_id>/', views.event_detail, name='event_detail'),
+
     # Other paths for logout, etc.
 ]

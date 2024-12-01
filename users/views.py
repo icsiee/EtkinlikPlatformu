@@ -350,10 +350,13 @@ from django.shortcuts import render, redirect
 from .models import Event, Message
 from .forms import MessageForm
 
-def event_detail(request, event_id):
-    event = Event.objects.get(id=event_id)
-    messages = Message.objects.filter(event=event).order_by('-created_at')
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Event, Message
+from .forms import MessageForm
 
+def event_detail(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    messages = event.messages.all().order_by('-created_at')  # Etkinliğe ait mesajlar
     if request.method == 'POST':
         form = MessageForm(request.POST)
         if form.is_valid():
@@ -361,12 +364,7 @@ def event_detail(request, event_id):
             message.event = event
             message.user = request.user
             message.save()
-            return redirect('event_detail', event_id=event.id)
+            return redirect('event_detail', event_id=event_id)
     else:
         form = MessageForm()
-
-    return render(request, 'event_detail.html', {
-        'event': event,
-        'messages': messages,
-        'form': form,
-    })
+    return render(request, 'event_detail.html', {'event': event, 'messages': messages, 'form': form})
