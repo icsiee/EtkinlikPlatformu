@@ -474,6 +474,8 @@ def dashboard(request):
 
     # Kullanıcının oluşturduğu ve onaylanmış etkinlikler
     approved_events = Event.objects.filter(created_by=request.user, status='approved')
+    user = request.user
+    recommended_events = recommend_events(user)  # Kullanıcıya önerilen etkinlikleri al
 
     # Kullanıcının katıldığı etkinlik sayısı
     user_events_count = request.user.events.count()  # Katıldığı etkinlikler
@@ -510,6 +512,8 @@ def dashboard(request):
         'user_events_count': user_events_count,
         'user_created_events_count': user_created_events_count,
         'total_points': total_points,
+        'recommended_events': recommended_events,  # Kullanıcıya önerilen etkinlikler
+
     }
 
     return render(request, 'users/user_dashboard.html', context)
@@ -794,4 +798,82 @@ def leave_event(request, event_id):
 
     # Dashboard sayfasına yönlendir
     return redirect('user_dashboard')
+
+from django.db.models import Q
+
+# Kullanıcıya ilgi alanlarına göre etkinlik önerisi yapma fonksiyonu
+def get_event_recommendations(user):
+    # Kullanıcının ilgi alanlarını al
+    user_interests = user.interests.all()
+
+    # İlgi alanlarına göre önerilen etkinlikleri al
+    recommended_events = Event.objects.filter(
+        Q(category__in=[interest.name.lower() for interest in user_interests]) &
+        Q(status='approved')  # Onaylanmış etkinlikler
+    )
+
+    return recommended_events
+
+from django.db.models import Q
+
+# Kullanıcıya uygun etkinlikleri öneren fonksiyon
+from django.db.models import Q
+
+from django.db.models import Q
+
+# Kullanıcıya uygun etkinlikleri öneren fonksiyon
+def recommend_events(user):
+    # Kullanıcının ilgi alanları
+    user_interests = user.interests.all()
+
+    if not user_interests:
+        return []  # Kullanıcının ilgi alanı yoksa, boş liste döndür
+
+    # Kullanıcının katıldığı etkinliklerin kategorileri
+    user_participated_categories = Event.objects.filter(participants=user).values('category').distinct()
+
+    # İlgi alanlarına göre öneri yapılacak etkinlikler
+    recommended_events = Event.objects.filter(
+        category__in=[interest.name.lower() for interest in user_interests]
+    ).exclude(
+        id__in=[event.id for event in user.events.all()]  # Kullanıcının katıldığı etkinlikleri dışla
+    )
+
+    # Eğer kullanıcı daha önce katılmadığı etkinlikler varsa
+    if recommended_events.exists():
+        return recommended_events
+
+    # Kullanıcının katıldığı etkinliklerin kategorilerinden öneri yap
+    recommended_events = Event.objects.filter(
+        category__in=[interest.name.lower() for interest in user_interests] +
+                      [event['category'] for event in user_participated_categories]
+    ).exclude(
+        id__in=[event.id for event in user.events.all()]  # Kullanıcının katıldığı etkinlikleri dışla
+    )
+
+    return recommended_events
+
+
+from django.shortcuts import render
+
+from django.shortcuts import render
+
+def event_recommendations(request):
+    user = request.user  # Mevcut kullanıcıyı al
+    recommended_events = recommend_events(user)  # Kullanıcıya önerilen etkinlikleri al
+
+    return render(request, 'event_recommendations.html', {'recommended_events': recommended_events})
+
+def user_event_participation(user, event):
+    user.events.add(event)  # Kullanıcıyı etkinliğe katıldık olarak işaretle
+    # Öneri sistemini güncelle
+    recommended_events = recommend_events(user)
+    return recommended_events
+
+from django.shortcuts import redirect
+
+def some_view(request):
+    # Bazı işlemler
+    return redirect('event_recommendations')  # Etkinlik önerileri sayfasına yönlendir
+
 

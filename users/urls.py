@@ -46,6 +46,8 @@ urlpatterns = [
     path('dashboard/admin/create-event/', views.admin_create_event, name='admin_create_event'),
     path('edit_profile/', views.edit_profile, name='edit_profile'),
     path('leave_event/<int:event_id>/', views.leave_event, name='leave_event'),
+    path('event_recommendations/', views.event_recommendations, name='event_recommendations'),
+    # Etkinlik önerileri sayfası
 
     # Etkinlik listesi
     # Diğer URL'ler...

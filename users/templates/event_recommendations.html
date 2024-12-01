@@ -1,0 +1,10 @@
+<h3>Önerilen Etkinlikler</h3>
+<ul>
+    {% for event in recommended_events %}
+        <li>
+            <a href="{% url 'event_detail' event.id %}">{{ event.name }}</a> - {{ event.date }} - {{ event.location }}
+        </li>
+    {% empty %}
+        <li>Henüz önerilecek etkinlik yok.</li>
+    {% endfor %}
+</ul>

@@ -207,10 +207,25 @@
         </ul>
     {% endif %}
 
+    <title>Önerilen Etkinlikler</title>
+</head>
+
+<h3>Önerilen Etkinlikler</h3>
+    <ul>
+        {% for event in recommended_events %}
+            <li>
+                <a href="{% url 'event_detail' event.id %}">{{ event.name }}</a> - {{ event.date }} - {{ event.location }}
+            </li>
+        {% empty %}
+            <li>Henüz önerilecek etkinlik yok.</li>
+        {% endfor %}
+    </ul>
+
+
     <!-- Katılabileceğiniz Etkinlikler -->
     <div class="dashboard-container">
         <div class="dashboard-panel">
-            <h3>Katılabileceğiniz Etkinlikler</h3>
+            <h3>Katılabileceğiniz Diğer Etkinlikler</h3>
             <ul>
                 {% for event in available_events %}
                     <li>
