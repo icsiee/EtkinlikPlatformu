@@ -1,31 +1,126 @@
-<!DOCTYPE html>
+{% load static %}
+
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Profil</title>
-        <link rel="stylesheet" href="{% static 'css/event_chat' %}">
-
+    <title>Admin Paneli</title>
     <style>
-        /* Basit stil ve düzenleme eklenebilir */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;  /* Koyu arka plan */
+            color: #e0e0e0;  /* Açık gri yazı rengi */
+        }
+        header {
+            background-color: #333;  /* Koyu header */
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 2px solid #444;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        .sidebar {
+            width: 20%;
+            background-color: #343a40;  /* Koyu gri sidebar */
+            color: white;
+            padding: 20px;
+            height: 100vh;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #495057;  /* Koyu gri arka plan */
+        }
+        .sidebar a:hover {
+            background-color: #4CAF50;  /* Hover efekti */
+        }
+        .content {
+            width: 75%;
+            padding: 30px;
+            background-color: #1e1e1e;  /* Koyu gri içerik alanı */
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        .content h2 {
+            color: #4CAF50;  /* Yeşil başlık */
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+        .profile-info {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .profile-info p {
+            margin: 10px 0;
+        }
+        .footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Admin Profil Bilgileri</h1>
+        <h1>Admin Paneli</h1>
     </header>
 
-    <div>
-        <h3>Kullanıcı Bilgileriniz</h3>
-        <p>Kullanıcı Adı: {{ user.username }}</p>
-        <p>Email: {{ user.email }}</p>
-        <p>Toplam Puanınız: {{ total_points }}</p>
-        <p>Katıldığınız Etkinlik Sayısı: {{ joined_events_count }}</p>
-        <p>Oluşturduğunuz ve Onaylanan Etkinlik Sayısı: {{ created_events_count }}</p>
+    <div class="container">
+        <!-- Sol Menü (Sidebar) -->
+        <div class="sidebar">
+            <a href="#">Anasayfa</a>
+            <a href="{% url 'user_interests' %}">İlgi Alanları</a>
+            <a href="{% url 'event_list' %}">Etkinlikler</a>
+            <a href="{% url 'admin_profile' %}">Ayarlar</a>
+            <a href="{% url 'logout' %}">Çıkış Yap</a>
+        </div>
+
+        <!-- Ana İçerik Alanı -->
+        <div class="content">
+            <h2>{{ user.username }}'in Kişisel Bilgileri</h2>
+
+            <div class="profile-info">
+                <p><strong>Kullanıcı Adı:</strong> {{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Ad:</strong> {{ user.first_name }}</p>
+                <p><strong>Soyad:</strong> {{ user.last_name }}</p>
+                <p><strong>Doğum Tarihi:</strong> {{ user.date_of_birth }}</p>
+                <p><strong>Profil Fotoğrafı:</strong>
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="profile-img">
+                    {% else %}
+                        <span>No Photo</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
     </div>
 
-    <a href="{% url 'admin_dashboard' %}">Admin Paneline Dön</a>
+    <div class="footer">
+        <p>© 2024 Etkinlik Planlayıcı. Tüm hakları saklıdır.</p>
+    </div>
 
 </body>
 </html>

@@ -146,7 +146,8 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Eğer kendi dizininizde static dosyaları varsa:
+# Geliştirme sırasında, statik dosyaları yerel olarak sunmak için:
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+

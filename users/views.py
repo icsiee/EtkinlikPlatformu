@@ -597,14 +597,19 @@ from django.contrib.auth.decorators import login_required
 from .models import Event, Message
 
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Event, Message
+
 @login_required
 def event_chat(request, event_id):
-    # Etkinliği ve mesajları al
+    # Etkinliği al
     event = get_object_or_404(Event, id=event_id)
 
-    # Kullanıcının etkinliğe katılıp katılmadığını kontrol et
-    if event not in request.user.events.all():
-        return redirect('user_dashboard')  # Katılmadığı etkinliğe erişmeye çalışıyorsa ana sayfaya yönlendir
+    # Admin kullanıcısı değilse, etkinliğe katılımını kontrol et
+    if not request.user.is_superuser:
+        if event not in request.user.events.all():
+            return redirect('user_dashboard')  # Katılmadığı etkinliğe erişmeye çalışıyorsa ana sayfaya yönlendir
 
     # Etkinliğe ait mesajları al
     messages = Message.objects.filter(event=event)
@@ -619,6 +624,7 @@ def event_chat(request, event_id):
         'event': event,
         'messages': messages,
     })
+
 
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render, redirect
@@ -660,7 +666,7 @@ def admin_profile(request):
     if not request.user.is_staff:
         return redirect('home')  # Admin değilse ana sayfaya yönlendir
 
-    user = request.user
+    user = get_object_or_404(User, id=3)  # id 3 olan kullanıcıyı bul
     points_data = calculate_user_points(user)  # Admin'in puan verileri
 
     return render(request, 'admin_profile.html', {  # 'users/admin_profile.html' kullanılıyor

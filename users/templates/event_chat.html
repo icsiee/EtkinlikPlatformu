@@ -5,7 +5,11 @@
         <h2 class="chat-header">{{ event.name }} - Chat</h2>
 
         <!-- Anasayfa Butonu -->
-        <a href="{% url 'user_dashboard' %}" class="btn btn-home">Anasayfaya Geri Dön</a>
+        {% if user.is_superuser %}
+            <a href="{% url 'event_list' %}" class="btn btn-home">Ana Sayfaya Geri Dön</a>
+        {% else %}
+            <a href="{% url 'user_dashboard' %}" class="btn btn-home">Ana Sayfaya Geri Dön</a>
+        {% endif %}
 
         <!-- Mesajlar ve chat geçmişi -->
         <div class="chat-container">

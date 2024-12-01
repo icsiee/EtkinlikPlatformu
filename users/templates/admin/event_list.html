@@ -113,19 +113,19 @@
 
         <h2>Onay Verilen Etkinlikler</h2>
         <ul>
-            {% for event in approved_events %}
-                <li>
-                    <strong>{{ event.name }}</strong><br>
-                    Tarih: {{ event.date }}<br>
-                    Saat: {{ event.time }}<br>
-                    Konum: {{ event.location }}<br>
-                    Durum: {{ event.get_status_display }}<br>
-                    Oluşturan Kullanıcı: {{ event.created_by.username }}<br>
-
-                    <a href="{% url 'edit_event' event.id %}">Düzenle</a> |
-                    <a href="{% url 'delete_event' event.id %}">Sil</a>
-                </li>
-            {% endfor %}
+             {% for event in approved_events %}
+        <li>
+            <strong>{{ event.name }}</strong><br>
+            Tarih: {{ event.date }}<br>
+            Saat: {{ event.time }}<br>
+            Konum: {{ event.location }}<br>
+            Durum: {{ event.get_status_display }}<br>
+            Oluşturan Kullanıcı: {{ event.created_by.username }}<br>
+            <a href="{% url 'edit_event' event.id %}">Düzenle</a> |
+            <a href="{% url 'delete_event' event.id %}">Sil</a> |
+            <a href="{% url 'event_chat' event.id %}">Chat</a>  <!-- Chat Linki -->
+        </li>
+    {% endfor %}
         </ul>
 
         <h2>Onay Bekleyen Etkinlikler</h2>
