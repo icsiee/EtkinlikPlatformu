@@ -571,7 +571,7 @@ def event_detail(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     messages = event.event_messages.all()  # Etkinlikle ilişkili mesajlar
 
-    return render(request, 'event_detail.html', {
+    return render(request, 'users/event_detail.html', {
         'event': event,
         'messages': messages
     })
@@ -689,7 +689,6 @@ def delete_user(request, user_id):
 
     # Kullanıcıyı sil
     user_to_delete.delete()
-    messages.success(request, "Kullanıcı başarıyla silindi.")
 
     # Admin paneline geri yönlendir
     return redirect('admin_dashboard')
@@ -702,7 +701,6 @@ def create_user(request):
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])  # Şifreyi şifreli olarak kaydediyoruz
             user.save()
-            messages.success(request, "Kayıt başarılı! Şimdi giriş yapabilirsiniz.")
             return redirect('admin_dashboard')
     else:
         form = CustomUserCreationForm()
