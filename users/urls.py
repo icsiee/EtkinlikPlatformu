@@ -38,7 +38,6 @@ urlpatterns = [
     path('dashboard/rejected-events/', views.rejected_events, name='rejected_events'),
     path('event/<int:event_id>/', views.event_detail, name='event_detail'),
     path('event/<int:event_id>/chat/', views.event_chat, name='event_chat'),
-    path('dashboard/admin/event/create/', views.admin_create_event, name='admin_create_event'),
     path('dashboard/admin/profile/', admin_profile, name='admin_profile'),  # Admin profil sayfası için doğru URL
     path('dashboard/admin/dashboard/', admin_dashboard, name='admin_dashboard'),  # Admin paneli için doğru URL
     path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),

@@ -360,7 +360,7 @@ def create_event(request):
             event.save()
 
             # Kullanıcıyı user_dashboard.html sayfasına yönlendir
-            return redirect('user_dashboard')  # Tüm kullanıcılar için dashboard sayfasına yönlendir
+            return redirect('event_list')  # Tüm kullanıcılar için dashboard sayfasına yönlendir
     else:
         form = EventForm()
 
