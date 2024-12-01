@@ -126,6 +126,7 @@
         <!-- Ana İçerik Alanı -->
         <div class="content">
             <h2>Kullanıcı Yönetimi</h2>
+            <a href="{% url 'create_user' %}" class="btn-create-user">Yeni Kullanıcı Ekle</a>
 
             <table>
     <thead>
@@ -159,6 +160,9 @@
                     <td>{{ data.created_events_count }}</td>  <!-- Oluşturdukları etkinlik sayısı -->
                     <td><a href="{% url 'edit_user' data.user.id %}" class="btn">Düzenle</a></td>
                     <td><a href="{% url 'user_detail' data.user.id %}" class="btn">Detay</a></td>
+                    <td>
+    <a href="{% url 'delete_user' data.user.id %}" class="btn">Sil</a>
+</td>
                 </tr>
             {% endif %}
         {% endfor %}

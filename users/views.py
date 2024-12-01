@@ -676,3 +676,34 @@ def admin_profile(request):
         'created_events_count': points_data['created_events_count'],
     })
 
+
+@login_required
+def delete_user(request, user_id):
+    # Kullanıcıyı al
+    user_to_delete = get_object_or_404(User, id=user_id)
+
+    # Kullanıcının superuser (admin) olup olmadığını kontrol et
+    if user_to_delete.is_superuser:
+        messages.error(request, "Admin kullanıcı silinemez.")
+        return redirect('admin_dashboard')
+
+    # Kullanıcıyı sil
+    user_to_delete.delete()
+    messages.success(request, "Kullanıcı başarıyla silindi.")
+
+    # Admin paneline geri yönlendir
+    return redirect('admin_dashboard')
+
+
+def create_user(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST, request.FILES)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])  # Şifreyi şifreli olarak kaydediyoruz
+            user.save()
+            messages.success(request, "Kayıt başarılı! Şimdi giriş yapabilirsiniz.")
+            return redirect('admin_dashboard')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'create_user.html', {'form': form})

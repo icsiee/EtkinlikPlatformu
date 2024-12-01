@@ -37,8 +37,10 @@ class EventCreationForm(forms.ModelForm):
     )
 
 
-class CustomUserCreationForm(forms.ModelForm):
+from django import forms
+from .models import User, Interest
 
+class CustomUserCreationForm(forms.ModelForm):
     interests = forms.ModelMultipleChoiceField(
         queryset=Interest.objects.all(),
         widget=forms.CheckboxSelectMultiple,
@@ -61,20 +63,8 @@ class CustomUserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'password', 'name', 'surname', 'birth_date', 'gender', 'email', 'phone_number',
-                  'profile_picture', 'interests']
+        fields = ['username', 'password', 'name', 'surname', 'birth_date', 'gender', 'email', 'phone_number', 'profile_picture', 'interests']
 
-    def clean_username(self):
-        username = self.cleaned_data.get('username')
-        if User.objects.filter(username=username).exists():
-            raise forms.ValidationError("Bu kullanıcı adı zaten alınmış.")
-        return username
-
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError("Bu e-posta adresi zaten kullanılıyor.")
-        return email
 
 
 # users/forms.py
