@@ -89,18 +89,34 @@ def signup_view(request):
     return render(request, 'signup.html', {'form': form})
 
 
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.contrib.auth.hashers import make_password
+
 @csrf_exempt
+
 def password_reset_view(request):
     if request.method == 'POST':
-        form = PasswordResetForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Parola sıfırlama talimatları gönderildi!")
-            return redirect('login')
-    else:
-        form = PasswordResetForm()
+        username = request.POST.get('username')
+        new_password = request.POST.get('password')
 
-    return render(request, 'users/password_reset.html', {'form': form})
+        # Kullanıcıyı bulmaya çalış
+        try:
+            user = User.objects.get(username=username)
+
+            # Yeni şifreyi güncelle
+            user.password = make_password(new_password)
+            user.save()
+
+            messages.success(request, "Parola başarıyla sıfırlandı!")
+            return redirect('login')  # Giriş sayfasına yönlendir
+
+        except User.DoesNotExist:
+            messages.error(request, "Kullanıcı adı bulunamadı. Lütfen geçerli bir kullanıcı adı girin.")
+            return redirect('password_reset')  # Parola sıfırlama sayfasına geri döner
+
+    return render(request, 'users/password_reset.html')
 
 
 @csrf_exempt
@@ -468,19 +484,51 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from .models import Event
 
+from django.shortcuts import render
+from .models import Event
+
 def dashboard(request):
+    # Kullanıcının oluşturduğu etkinlikler
     created_events = Event.objects.filter(created_by=request.user)
+
+    # Kullanıcının katılabileceği etkinlikler (kendisi oluşturmadığı)
     available_events = Event.objects.exclude(created_by=request.user)
+
+    # Kullanıcının oluşturduğu ve onaylanmış etkinlikler
+    approved_events = Event.objects.filter(created_by=request.user, status='approved')
+
+    # Kullanıcının katıldığı etkinlik sayısı
     user_events_count = created_events.count()
+
+    # Kullanıcının oluşturduğu etkinlik sayısı
     user_created_events_count = created_events.count()
+
+    approved_events = Event.objects.filter(
+        status='approved'
+    ).exclude(
+        latitude__isnull=True, longitude__isnull=True
+    )
+
+    # Harita için onaylanmış etkinliklerin verileri
+    approved_event_data = [
+        {
+            'id': event.id,
+            'name': event.name,
+            'latitude': event.latitude,
+            'longitude': event.longitude,
+        }
+        for event in approved_events
+    ]
 
     context = {
         'created_events': created_events,
         'available_events': available_events,
+        'approved_events': approved_event_data,
         'user_events_count': user_events_count,
         'user_created_events_count': user_created_events_count,
-        'total_points': calculate_user_points(request.user),  # Burada çağrılıyor
+        'total_points': calculate_user_points(request.user),  # Kullanıcı puanı hesaplanıyor
     }
+
     return render(request, 'users/user_dashboard.html', context)
 
 def resubmit_event(request, event_id):
@@ -539,31 +587,51 @@ def rejected_events(request):
     return render(request, 'users/rejected_events.html', context)
 
 
+from .models import Event, Participant, Points
+
+
+from django.contrib import messages
+from django.shortcuts import redirect, get_object_or_404
+from .models import Event, Points, Participant
+
+from django.contrib import messages
+from django.shortcuts import redirect, get_object_or_404
+from .models import Event, Points
+
 def join_event(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     user = request.user
 
-    # Kullanıcının etkinliğe daha önce katılıp katılmadığını kontrol et
+    # Kullanıcının zaten bu etkinliğe katılıp katılmadığını kontrol et
     if event in user.events.all():
         messages.warning(request, 'Bu etkinliğe zaten katıldınız!')
-    else:
-        # Kullanıcı etkinliğe ilk kez katılıyor
-        user.events.add(event)
+        return redirect('user_dashboard')  # Kullanıcıyı dashboard'a yönlendir
 
-        # İlk katılım kontrolü
-        first_join_bonus_exists = Points.objects.filter(
-            user=user, point_type='first_join_bonus'
-        ).exists()
+    # Kullanıcının katıldığı etkinliklerle çakışma kontrolü yap
+    conflicting_events = Event.objects.filter(date=event.date, time=event.time).exclude(id=event.id)
 
-        if not first_join_bonus_exists:
-            add_points(user, 20, 'first_join_bonus')
-            messages.success(request, 'İlk etkinliğinize katıldığınız için 20 puan kazandınız!')
+    # Çakışan etkinlik var mı diye kontrol et
+    for conflicting_event in conflicting_events:
+        if conflicting_event in user.events.all():
+            messages.warning(request, 'Bu etkinlik, daha önce katıldığınız bir etkinlik ile çakışmaktadır. Katılamazsınız.')
+            return redirect('user_dashboard')  # Çakışma durumu varsa dashboard'a yönlendir
 
-        # Normal katılım puanı ekle
-        add_points(user, 10, 'join_event')
-        messages.success(request, f'{event.name} etkinliğine başarıyla katıldınız!')
+    # Etkinlik katılım işlemi
+    user.events.add(event)
 
-    return redirect('user_dashboard')
+    # İlk etkinlik katılım bonusu
+    first_join_bonus_exists = Points.objects.filter(user=user, point_type='first_join_bonus').exists()
+    if not first_join_bonus_exists:
+        add_points(user, 20, 'first_join_bonus')  # İlk katılım bonusu
+        messages.success(request, 'İlk etkinliğinize katıldığınız için 20 puan kazandınız!')
+
+    # Normal etkinlik katılım puanı ekle
+    add_points(user, 10, 'join_event')  # Katılım puanı
+    messages.success(request, f'{event.name} etkinliğine başarıyla katıldınız!')
+
+    return redirect('user_dashboard')  # Katılım işlemi sonrası dashboard'a yönlendir
+
+
 
 from django.shortcuts import render
 
@@ -705,3 +773,11 @@ def create_user(request):
     else:
         form = CustomUserCreationForm()
     return render(request, 'create_user.html', {'form': form})
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Event, Participant
+from datetime import datetime
+
+
