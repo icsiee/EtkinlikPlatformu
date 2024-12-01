@@ -1,13 +1,9 @@
 from django.contrib.auth import authenticate, login
-from .models import Event, Participant
 from django.contrib.auth import logout
-from .models import Event, User
-from django.contrib.auth.forms import PasswordResetForm
+
 from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
+
 User = get_user_model()
 
 
@@ -130,13 +126,6 @@ def user_logout(request):
     return redirect('user_login')  # Redirect to the login page after logout
 
 
-from django.shortcuts import render
-from .models import Event, Points
-from django.db import models
-
-
-from django.db.models import Sum
-from .models import Event, Points
 
 def user_dashboard(request):
     user = request.user
@@ -253,8 +242,6 @@ def delete_event(request, event_id):
     return redirect('admin/event_list')  # Etkinlikler sayfasına yönlendirme
 
 
-
-from .models import Event, Points, Message
 from django.utils import timezone
 
 def approve_event(request, event_id):
@@ -329,8 +316,6 @@ def delete_event(request, event_id):
 
 
 
-
-
 def update_event(request, event_id):
     # Etkinliği al, ancak yalnızca oluşturan kullanıcı erişebilsin
     event = get_object_or_404(Event, id=event_id, created_by=request.user)
@@ -367,18 +352,35 @@ def create_event(request):
             # Latitude ve longitude değerlerini formdan al
             event.latitude = request.POST.get('latitude')
             event.longitude = request.POST.get('longitude')
-            event.location = f"{event.latitude}, {event.longitude}"  # Konum bilgisini birleştir
+            if event.latitude and event.longitude:
+                event.location = f"{event.latitude}, {event.longitude}"  # Konum bilgisini birleştir
+            else:
+                event.location = "Bilinmiyor"  # Coğrafi veri yoksa
+
             event.save()
 
-            # Admin kullanıcısı ise etkinlik listesine yönlendir, normal kullanıcı ise dashboard'a yönlendir
-            if request.user.is_superuser:  # Admin kontrolü
-                return redirect('event_list')  # Admin için etkinlik listesi sayfasına yönlendir
-            else:
-                return redirect('user_dashboard')  # Diğer kullanıcılar için kullanıcı panosu sayfasına yönlendir
+            # Kullanıcıyı user_dashboard.html sayfasına yönlendir
+            return redirect('user_dashboard')  # Tüm kullanıcılar için dashboard sayfasına yönlendir
     else:
         form = EventForm()
 
     return render(request, 'users/event_map.html', {'form': form})
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .forms import EventForm
+from .models import Event
+
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .forms import EventForm
+from .models import Event
+
 
 @login_required
 def user_event_map(request, event_id=None):
@@ -414,6 +416,8 @@ def user_event_map(request, event_id=None):
 
 
 
+
+
 from django.shortcuts import render, get_object_or_404
 from .models import User, Participant, Event
 
@@ -434,6 +438,8 @@ def user_detail(request, user_id):
         'user_participations': user_participations,
         'created_events': created_events,
     })
+
+
 
 # views.py
 from django.shortcuts import render, redirect
@@ -480,12 +486,6 @@ def edit_interest(request, interest_id):
 
     return render(request, 'users/edit_interest.html', {'form': form})
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from .models import Event
-
-from django.shortcuts import render
-from .models import Event
 
 def dashboard(request):
     # Kullanıcının oluşturduğu etkinlikler
@@ -498,11 +498,12 @@ def dashboard(request):
     approved_events = Event.objects.filter(created_by=request.user, status='approved')
 
     # Kullanıcının katıldığı etkinlik sayısı
-    user_events_count = created_events.count()
+    user_events_count = request.user.events.count()  # Katıldığı etkinlikler
 
     # Kullanıcının oluşturduğu etkinlik sayısı
-    user_created_events_count = created_events.count()
+    user_created_events_count = created_events.count()  # Oluşturduğu etkinlikler
 
+    # Onaylanmış etkinlikler (latitude ve longitude eksik olmayan)
     approved_events = Event.objects.filter(
         status='approved'
     ).exclude(
@@ -520,16 +521,23 @@ def dashboard(request):
         for event in approved_events
     ]
 
+    # Kullanıcı puanını hesapla (eğer bir fonksiyon varsa)
+    total_points = calculate_user_points(request.user)
+
+    # Veriyi şablona gönder
     context = {
         'created_events': created_events,
         'available_events': available_events,
-        'approved_events': approved_event_data,
+        'approved_events': approved_event_data,  # Harita için onaylı etkinlikler
         'user_events_count': user_events_count,
         'user_created_events_count': user_created_events_count,
-        'total_points': calculate_user_points(request.user),  # Kullanıcı puanı hesaplanıyor
+        'total_points': total_points,
     }
 
     return render(request, 'users/user_dashboard.html', context)
+
+
+
 
 def resubmit_event(request, event_id):
     event = get_object_or_404(Event, id=event_id, created_by=request.user)
@@ -587,15 +595,7 @@ def rejected_events(request):
     return render(request, 'users/rejected_events.html', context)
 
 
-from .models import Event, Participant, Points
 
-
-from django.contrib import messages
-from django.shortcuts import redirect, get_object_or_404
-from .models import Event, Points, Participant
-
-from django.contrib import messages
-from django.shortcuts import redirect, get_object_or_404
 from .models import Event, Points
 
 def join_event(request, event_id):
@@ -660,10 +660,6 @@ def send_message(request, event_id):
         return HttpResponseRedirect(f'/event/{event.id}/')  # Yönlendirme
 
 
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from .models import Event, Message
-
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
@@ -695,7 +691,6 @@ def event_chat(request, event_id):
 
 
 from django.contrib.auth.decorators import user_passes_test
-from django.shortcuts import render, redirect
 from .forms import EventForm
 
 # Sadece adminler için kontrol
@@ -720,13 +715,8 @@ def admin_create_event(request):
     return render(request, 'admin_create_event.html', {'form': form})
 
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
 
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-
-from django.shortcuts import render
 
 
 @login_required
@@ -778,6 +768,4 @@ def create_user(request):
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Event, Participant
-from datetime import datetime
-
 

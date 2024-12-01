@@ -4,44 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kullanıcı Dashboard</title>
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
- <style>
-      body {
-            font-family: Arial, sans-serif;
+    <style>
+        body {
+            font-family: 'Calibri', sans-serif;
+
             padding: 20px;
-            background-color: #2c3e50; /* Koyu arka plan rengi */
+            background-color: #2a2a2a; /* Koyu antrasit arka plan */
             color: #ecf0f1; /* Açık renk metin */
         }
-        h2 {
+        h2, h3, h4 {
             color: #ecf0f1;
             text-align: center;
         }
         .dashboard-container {
             display: flex;
             justify-content: center;
-            margin-top: 50px;
+            margin-top: 30px;
         }
         .dashboard-panel {
             width: 60%;
             padding: 20px;
-            background-color: #34495e; /* Koyu gri panel arka planı */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: #3b3b3b; /* Koyu gri paneller */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             border-radius: 8px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .success {
-            color: #2ecc71; /* Yeşil renk */
+            color: #27ae60; /* Yeşil renk */
             font-weight: bold;
             text-align: center;
         }
         .points-section {
             margin-top: 30px;
             padding: 20px;
-            background-color: #1abc9c; /* Yeşil tonlarında bir arka plan */
+            background-color: #16a085; /* Yeşil tonlarında bir arka plan */
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
         .points-section h4 {
             color: #ecf0f1;
@@ -52,17 +53,17 @@
             color: #ecf0f1;
         }
         .button {
-            background-color: #3498db; /* Mavi buton */
+            background-color: #2c3e50; /* Mavi buton */
             color: white;
             padding: 10px 20px;
             text-decoration: none;
             border-radius: 5px;
-            margin-top: 20px;
+            margin-top: 10px;
             display: inline-block;
             text-align: center;
         }
         .button:hover {
-            background-color: #2980b9; /* Mavi buton hover rengi */
+            background-color:#154360; /* Mavi buton hover rengi */
         }
         a {
             color: #3498db; /* Mavi link rengi */
@@ -78,6 +79,17 @@
             padding: 10px 0;
             border-bottom: 1px solid #ecf0f1;
         }
+        .map-container {
+            width: 100%;
+            height: 600px;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
@@ -89,10 +101,8 @@
         <a href="{% url 'login' %}" class="button">Girişe Dön</a>
     </div>
 
-
     <div class="dashboard-container">
         <div class="dashboard-panel">
-
             <h3>Dashboard</h3>
             <p>Burada etkinliklerinizi yönetebilirsiniz.</p>
 
@@ -101,24 +111,31 @@
         </div>
     </div>
 
-<!-- Kullanıcının Puan Durumu -->
-<div>
-    <h3>Kullanıcı Bilgileriniz</h3>
-    <p>Katıldığınız Etkinlik Sayısı: {{ user_events_count }}</p>
-    <p>Oluşturduğunuz ve Onaylanan Etkinlik Sayısı: {{ user_created_events_count }}</p>
-    <p>Toplam Puanınız: {{ total_points }}</p>
-</div>
+    <div class="dashboard-container">
+        <div class="dashboard-panel">
+    <!-- Kullanıcının Puan Durumu -->
+    <div>
+        <h3>Kullanıcı Bilgileriniz</h3>
+        <p>Katıldığınız Etkinlik Sayısı: {{ user_events_count }}</p>
+        <p>Oluşturduğunuz ve Onaylanan Etkinlik Sayısı: {{ user_created_events_count }}</p>
+        <p>Toplam Puanınız: {{ total_points }}</p>
+    </div>
+            </div>
+    </div>
 
-<h2>Katıldığınız Etkinlikler</h2>
-<ul>
-    {% for event in user.events.all %}
-        <li>
-            <strong>{{ event.name }}</strong>
-            <a href="{% url 'event_chat' event.id %}">Chat</a>
-        </li>
-    {% endfor %}
-</ul>
-
+    <div class="dashboard-container">
+        <div class="dashboard-panel">
+    <h2>Katıldığınız Etkinlikler</h2>
+    <ul>
+        {% for event in user.events.all %}
+            <li>
+                <strong>{{ event.name }}</strong>
+                <a href="{% url 'event_chat' event.id %}">Chat</a>
+            </li>
+        {% endfor %}
+    </ul>
+    </div>
+    </div>
 
     <!-- Kullanıcının Oluşturduğu Etkinlikler -->
     <div class="dashboard-container">
@@ -137,18 +154,18 @@
     </div>
 
     <div class="dashboard-container">
-    <div class="dashboard-panel">
-        <a href="{% url 'rejected_events' %}" class="button">Reddedilen Etkinlikler</a>
+        <div class="dashboard-panel">
+            <a href="{% url 'rejected_events' %}" class="button">Reddedilen Etkinlikler</a>
+        </div>
     </div>
-</div>
 
- {% if messages %}
-                <ul>
-                    {% for message in messages %}
-                        <li class="success">{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li class="success">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 
     <!-- Katılabileceğiniz Etkinlikler -->
     <div class="dashboard-container">
@@ -165,43 +182,38 @@
         </div>
     </div>
 
-<h2>Harita Üzerinde Etkinlikler</h2>
-<div class="map-container">
-    <div id="map"></div>
-</div>
+    <!-- Harita Üzerinde Etkinlikler -->
+    <h2>Harita Üzerinde Etkinlikler</h2>
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
 
-<script>
-    // Haritayı Başlat
-    var map = L.map('map').setView([39.92077, 32.85411], 6); // Türkiye merkezli başlangıç
+    <script>
+        var map = L.map('map').setView([39.9334, 32.8597], 12); // Ankara merkezli
 
-    // OpenStreetMap Katmanı
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 18,
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
-    }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+        }).addTo(map);
 
-    // Django'dan alınan etkinlik verilerini JavaScript'e gönderme
-    var events = [
-        {% for event in approved_events %}
-        {
-            name: "{{ event.name }}",
-            latitude: {{ event.latitude }},
-            longitude: {{ event.longitude }},
-            url: "{% url 'event_detail' event.id %}"
-        },
-        {% endfor %}
-    ];
+        var events = [
+            {% for event in approved_events %}
+            {
+                name: "{{ event.name }}",
+                latitude: {{ event.latitude }},
+                longitude: {{ event.longitude }},
+                url: "{% url 'event_detail' event.id %}"
+            },
+            {% endfor %}
+        ];
 
-events.forEach(function(event) {
-    if (event.latitude && event.longitude) {
-        var marker = L.marker([event.latitude, event.longitude]).addTo(map);
-        marker.bindPopup(`<a href="${event.url}" target="_blank">${event.name}</a>`);
-    }
-});
-
-</script>
-
-
+        events.forEach(function(event) {
+            if (event.latitude && event.longitude) {
+                var marker = L.marker([event.latitude, event.longitude]).addTo(map);
+                marker.bindPopup(`<a href="${event.url}" target="_blank">${event.name}</a>`);
+            }
+        });
+    </script>
 
 </body>
 </html>

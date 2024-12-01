@@ -82,8 +82,8 @@ class Event(models.Model):
         choices=CATEGORY_CHOICES,  # Kategori seçenekleri
         default='music'  # Varsayılan değer
     )
-    latitude = models.FloatField(null=True, blank=True)
-    longitude = models.FloatField(null=True, blank=True)
+    latitude = models.FloatField(null=False, blank=False)
+    longitude = models.FloatField(null=False, blank=False)
     created_by = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='created_events'
     )

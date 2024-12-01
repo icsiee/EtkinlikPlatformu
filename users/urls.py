@@ -17,6 +17,8 @@ urlpatterns = [
     path('events/', views.event_list, name='event_list'),  # Bu URL ile etkinlikler listelenir
     path('event/create/', views.create_event, name='create_event'),
     path('dashboard/event/create/', views.create_event, name='create_event'),
+    path('admin/events/', views.event_list, name='event_list'),
+
     path('admin/', admin.site.urls),
     path('edit/<int:event_id>/', views.edit_event, name='edit_event'),  # Etkinlik düzenleme
     path('join_event/<int:event_id>/', views.join_event, name='join_event'),
