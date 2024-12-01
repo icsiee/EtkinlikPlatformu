@@ -4,6 +4,9 @@
     <div class="container">
         <h2 class="chat-header">{{ event.name }} - Chat</h2>
 
+        <!-- Anasayfa Butonu -->
+        <a href="{% url 'user_dashboard' %}" class="btn btn-home">Anasayfaya Geri Dön</a>
+
         <!-- Mesajlar ve chat geçmişi -->
         <div class="chat-container">
             {% for message in messages %}

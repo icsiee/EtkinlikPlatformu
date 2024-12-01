@@ -38,6 +38,7 @@ class EventCreationForm(forms.ModelForm):
 
 
 class CustomUserCreationForm(forms.ModelForm):
+
     interests = forms.ModelMultipleChoiceField(
         queryset=Interest.objects.all(),
         widget=forms.CheckboxSelectMultiple,

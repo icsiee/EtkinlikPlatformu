@@ -9,48 +9,56 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
+            background-color: #121212;  /* Koyu arka plan */
+            color: #e0e0e0;  /* Açık gri yazı rengi */
         }
         header {
-            background-color: #007bff;
+            background-color: #333;  /* Koyu header */
             color: white;
-            padding: 20px;
+            padding: 30px;
             text-align: center;
+            border-bottom: 2px solid #444;
         }
         header h1 {
             margin: 0;
             font-size: 2.5em;
         }
         .container {
-            padding: 20px;
+            padding: 30px;
             max-width: 800px;
-            margin: 0 auto;
-            background-color: white;
+            margin: 30px auto;
+            background-color: #1e1e1e;  /* Koyu gri kutu */
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
         .form-group {
             margin-bottom: 15px;
         }
         label {
             font-size: 1.1em;
-            color: #333;
+            color: #4CAF50;  /* Yeşil başlık */
         }
         input, select, button {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
             font-size: 1em;
-            border: 1px solid #ddd;
+            border: 1px solid #555;
             border-radius: 5px;
+            background-color: #333;
+            color: #e0e0e0;
+        }
+        input[type="file"] {
+            padding: 5px;
         }
         button {
-            background-color: #007bff;
+            background-color: #4CAF50;
             color: white;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #45a049;
         }
         .footer {
             background-color: #343a40;
@@ -58,6 +66,15 @@
             text-align: center;
             padding: 10px;
             margin-top: 20px;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        img {
+            border-radius: 50%;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -70,12 +87,14 @@
     <div class="container">
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-             <!-- Display error message -->
-    {% if error %}
-        <div style="color: red; font-weight: bold;">
-            {{ error }}
-        </div>
-    {% endif %}
+
+            <!-- Hata mesajı -->
+            {% if error %}
+                <div class="error">
+                    {{ error }}
+                </div>
+            {% endif %}
+
             <div class="form-group">
                 <label for="username">Kullanıcı Adı</label>
                 <input type="text" id="username" name="username" value="{{ user.username }}" required>
@@ -113,6 +132,7 @@
                     <option value="E" {% if user.gender == 'E' %}selected{% endif %}>Erkek</option>
                 </select>
             </div>
+
             <button type="submit">Düzenlemeyi Kaydet</button>
         </form>
     </div>

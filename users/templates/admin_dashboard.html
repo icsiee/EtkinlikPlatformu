@@ -1,4 +1,6 @@
+
 <!DOCTYPE html>
+
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -9,13 +11,15 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
+            background-color: #121212;  /* Koyu arka plan */
+            color: #e0e0e0;  /* Açık gri yazı rengi */
         }
         header {
-            background-color: #007bff;
+            background-color: #333;  /* Koyu header */
             color: white;
-            padding: 20px;
+            padding: 30px;
             text-align: center;
+            border-bottom: 2px solid #444;
         }
         header h1 {
             margin: 0;
@@ -28,10 +32,11 @@
         }
         .sidebar {
             width: 20%;
-            background-color: #343a40;
+            background-color: #343a40;  /* Koyu gri sidebar */
             color: white;
             padding: 20px;
             height: 100vh;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
         }
         .sidebar a {
             color: white;
@@ -40,20 +45,20 @@
             margin-bottom: 10px;
             padding: 10px;
             border-radius: 5px;
-            background-color: #495057;
+            background-color: #495057;  /* Koyu gri arka plan */
         }
         .sidebar a:hover {
-            background-color: #007bff;
+            background-color: #4CAF50;  /* Hover efekti */
         }
         .content {
             width: 75%;
-            padding: 20px;
-            background-color: white;
+            padding: 30px;
+            background-color: #1e1e1e;  /* Koyu gri içerik alanı */
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
         .content h2 {
-            color: #007bff;
+            color: #4CAF50;  /* Yeşil başlık */
             font-size: 1.8em;
             margin-bottom: 20px;
         }
@@ -70,7 +75,7 @@
             text-align: center;
         }
         th {
-            background-color: #007bff;
+            background-color: #007bff;  /* Mavi başlıklar */
             color: white;
         }
         .btn {
@@ -80,6 +85,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
         .btn:hover {
             background-color: #218838;
@@ -113,44 +119,54 @@
             <a href="#">Anasayfa</a>
             <a href="{% url 'user_interests' %}">İlgi Alanları</a>
             <a href="{% url 'event_list' %}">Etkinlikler</a>
-            <a href="#">Ayarlar</a>
+<a href="{% url 'admin_profile' %}">Ayarlar</a>
             <a href="{% url 'logout' %}">Çıkış Yap</a>
         </div>
 
         <!-- Ana İçerik Alanı -->
         <div class="content">
             <h2>Kullanıcı Yönetimi</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Profil Fotoğrafı</th>
-                        <th>Kullanıcı Adı</th>
-                        <th>Email</th>
-                        <th>Durum</th>
-                        <th>İşlem</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in users %}
-                    <tr>
-                        <td>{{ user.id }}</td>
-                      <td>
-    {% if user.profile_picture %}
-        <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="profile-img">
-    {% else %}
-        <span>No Photo</span>
-    {% endif %}
-</td>
 
-                        <td>{{ user.username }}</td>
-                        <td>{{ user.email }}</td>
-                        <td><a href="{% url 'edit_user' user.id %}" class="btn">Düzenle</a></td>
-                        <td><a href="{% url 'user_detail' user.id %}" class="btn">Detay</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Profil Fotoğrafı</th>
+            <th>Kullanıcı Adı</th>
+            <th>Email</th>
+            <th>Toplam Puan</th>
+            <th>Katıldıkları Etkinlik Sayısı</th>
+            <th>Oluşturdukları Etkinlik Sayısı</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for data in user_data %}
+            {% if not data.user.is_superuser %}
+                <tr>
+                    <td>{{ data.user.id }}</td>
+                    <td>
+                        {% if data.user.profile_picture %}
+                            <img src="{{ data.user.profile_picture.url }}" alt="Profile Picture" class="profile-img">
+                        {% else %}
+                            <span>No Photo</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ data.user.username }}</td>
+                    <td>{{ data.user.email }}</td>
+                    <td>{{ data.total_points }}</td>  <!-- Kullanıcının toplam puanı -->
+                    <td>{{ data.joined_events_count }}</td>  <!-- Katıldıkları etkinlik sayısı -->
+                    <td>{{ data.created_events_count }}</td>  <!-- Oluşturdukları etkinlik sayısı -->
+                    <td><a href="{% url 'edit_user' data.user.id %}" class="btn">Düzenle</a></td>
+                    <td><a href="{% url 'user_detail' data.user.id %}" class="btn">Detay</a></td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
         </div>
     </div>
 

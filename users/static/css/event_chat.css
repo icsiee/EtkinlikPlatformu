@@ -88,3 +88,20 @@ body {
 .send-button:hover {
     background-color: #16a085; /* Buton hover efekti */
 }
+
+/* event_chat.css */
+.btn-home {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    font-size: 16px;
+    text-align: center;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-bottom: 20px;
+}
+
+.btn-home:hover {
+    background-color: #555;
+}

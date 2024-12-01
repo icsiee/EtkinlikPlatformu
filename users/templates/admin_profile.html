@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Profil</title>
+        <link rel="stylesheet" href="{% static 'css/event_chat' %}">
+
+    <style>
+        /* Basit stil ve düzenleme eklenebilir */
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Admin Profil Bilgileri</h1>
+    </header>
+
+    <div>
+        <h3>Kullanıcı Bilgileriniz</h3>
+        <p>Kullanıcı Adı: {{ user.username }}</p>
+        <p>Email: {{ user.email }}</p>
+        <p>Toplam Puanınız: {{ total_points }}</p>
+        <p>Katıldığınız Etkinlik Sayısı: {{ joined_events_count }}</p>
+        <p>Oluşturduğunuz ve Onaylanan Etkinlik Sayısı: {{ created_events_count }}</p>
+    </div>
+
+    <a href="{% url 'admin_dashboard' %}">Admin Paneline Dön</a>
+
+</body>
+</html>

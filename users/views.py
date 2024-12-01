@@ -92,23 +92,15 @@ def signup_view(request):
 @csrf_exempt
 def password_reset_view(request):
     if request.method == 'POST':
-
-        username=request.POST.get("username")
-        password=request.POST.get("password")
-        print(username,password)
-        user=User.objects.filter(username=username).first()
-        print(user)
-        if user:
-            user.set_password(password)
-            user.save()
-        messages.success(request, "Parola sıfırlama talimatları gönderildi!")
-        return redirect('login')
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Parola sıfırlama talimatları gönderildi!")
+            return redirect('login')
     else:
         form = PasswordResetForm()
 
-    return render(request, 'users/password_reset.html', )
-
-
+    return render(request, 'users/password_reset.html', {'form': form})
 
 
 @csrf_exempt
@@ -116,12 +108,10 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-
 @csrf_exempt
 def user_logout(request):
     logout(request)
     return redirect('user_login')  # Redirect to the login page after logout
-
 
 
 from django.shortcuts import render
@@ -163,14 +153,30 @@ def user_dashboard(request):
 
 
 
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import User
+
 @csrf_exempt
 @login_required
 def admin_dashboard(request):
     if not request.user.is_staff:
         return redirect('home')  # Eğer admin değilse, ana sayfaya yönlendir
-    users = User.objects.all()
-    return render(request, 'admin_dashboard.html', {'users': users})
 
+    users = User.objects.all()
+    user_data = []
+
+    # Kullanıcılar için toplam puanları ve etkinlik bilgilerini hesapla
+    for user in users:
+        points_data = calculate_user_points(user)  # Her kullanıcı için puan verilerini hesapla
+        user_data.append({
+            'user': user,
+            'total_points': points_data['total_points'],
+            'joined_events_count': points_data['joined_events_count'],
+            'created_events_count': points_data['created_events_count'],
+        })
+
+    return render(request, 'admin_dashboard.html', {'user_data': user_data})
 
 
 
@@ -232,12 +238,6 @@ def delete_event(request, event_id):
 
 
 
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-from .models import Event
-
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
 from .models import Event, Points, Message
 from django.utils import timezone
 
@@ -313,31 +313,6 @@ def delete_event(request, event_id):
 
 
 
-def create_event(request):
-    if request.method == 'POST':
-        form = EventForm(request.POST)
-        if form.is_valid():
-            event = form.save(commit=False)
-            event.created_by = request.user  # Etkinliği oluşturan kullanıcıyı ata
-            # Latitude ve longitude değerlerini formdan al
-            event.latitude = request.POST.get('latitude')
-            event.longitude = request.POST.get('longitude')
-            event.location = f"{event.latitude}, {event.longitude}"  # Konum bilgisini birleştir
-            event.save()
-            # Kullanıcıya başarı mesajı gönder
-            return redirect('event_list')  # Etkinlik listesi sayfasına yönlendir
-    else:
-        form = EventForm()
-    return render(request, 'users/event_map.html', {'form': form})
-
-from django.shortcuts import render, get_object_or_404
-from .models import Event
-
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from .models import Event
-# users/views.py
 
 
 def update_event(request, event_id):
@@ -361,7 +336,35 @@ from django.contrib import messages
 from .forms import EventForm, CustomUserCreationForm, InterestForm
 from .models import Event
 
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import EventForm
+from .models import Event
+from django.contrib.auth.decorators import login_required
 
+@login_required  # Kullanıcının giriş yapmış olmasını zorunlu kılar
+def create_event(request):
+    if request.method == 'POST':
+        form = EventForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.created_by = request.user  # Etkinliği oluşturan kullanıcıyı ata
+            # Latitude ve longitude değerlerini formdan al
+            event.latitude = request.POST.get('latitude')
+            event.longitude = request.POST.get('longitude')
+            event.location = f"{event.latitude}, {event.longitude}"  # Konum bilgisini birleştir
+            event.save()
+
+            # Admin kullanıcısı ise etkinlik listesine yönlendir, normal kullanıcı ise dashboard'a yönlendir
+            if request.user.is_superuser:  # Admin kontrolü
+                return redirect('event_list')  # Admin için etkinlik listesi sayfasına yönlendir
+            else:
+                return redirect('user_dashboard')  # Diğer kullanıcılar için kullanıcı panosu sayfasına yönlendir
+    else:
+        form = EventForm()
+
+    return render(request, 'users/event_map.html', {'form': form})
+
+@login_required
 def user_event_map(request, event_id=None):
     """
     Kullanıcılar için etkinlik ekleme veya düzenleme işlemleri.
@@ -385,13 +388,14 @@ def user_event_map(request, event_id=None):
             new_event.location = f"{new_event.latitude}, {new_event.longitude}"
             new_event.save()
 
-
+            # Kullanıcıya yönlendirme
             return redirect('user_dashboard')  # Kullanıcı dashboard'una yönlendirme
 
     return render(request, 'users/user_event_map.html', {
         'form': form,
         'event': event
     })
+
 
 
 from django.shortcuts import render, get_object_or_404
@@ -492,9 +496,16 @@ def resubmit_event(request, event_id):
     return redirect('user_dashboard')
 
 
+from django.db.models import Sum
+
 def calculate_user_points(user):
-    total_points = user.user_points.aggregate(total=models.Sum('score'))['total'] or 0
+    # Kullanıcının tüm Points'lerinden toplam puanı al
+    total_points = user.user_points.aggregate(total=Sum('score'))['total'] or 0
+
+    # Katıldığı etkinlik sayısını al
     joined_events_count = user.events.count()
+
+    # Oluşturduğu onaylanmış etkinlik sayısını al
     created_events_count = user.created_events.filter(status='approved').count()
 
     return {
@@ -502,8 +513,6 @@ def calculate_user_points(user):
         'joined_events_count': joined_events_count,
         'created_events_count': created_events_count,
     }
-
-
 
 def handle_first_join_event(user, event):
     if user.events.count() == 0:  # Kullanıcının ilk etkinliği
@@ -611,4 +620,53 @@ def event_chat(request, event_id):
         'messages': messages,
     })
 
+from django.contrib.auth.decorators import user_passes_test
+from django.shortcuts import render, redirect
+from .forms import EventForm
+
+# Sadece adminler için kontrol
+def is_admin(user):
+    return user.is_superuser
+
+@user_passes_test(is_admin)
+def admin_create_event(request):
+    """
+    Adminler için etkinlik oluşturma görünümü.
+    """
+    if request.method == 'POST':
+        form = EventForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.created_by = request.user  # Admin olarak etkinliği oluşturan
+            event.save()
+            return redirect('admin_dashboard')  # Admin dashboard'a yönlendirme
+    else:
+        form = EventForm()
+
+    return render(request, 'admin_create_event.html', {'form': form})
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+from django.shortcuts import render
+
+
+@login_required
+def admin_profile(request):
+    if not request.user.is_staff:
+        return redirect('home')  # Admin değilse ana sayfaya yönlendir
+
+    user = request.user
+    points_data = calculate_user_points(user)  # Admin'in puan verileri
+
+    return render(request, 'admin_profile.html', {  # 'users/admin_profile.html' kullanılıyor
+        'user': user,
+        'total_points': points_data['total_points'],
+        'joined_events_count': points_data['joined_events_count'],
+        'created_events_count': points_data['created_events_count'],
+    })
 

@@ -48,8 +48,12 @@ class User(AbstractUser):
 
     objects = UserManager()
 
+    # Kullanıcının toplam puanını hesaplayacak fonksiyon
+    def total_points(self):
+        return sum(point.value for point in self.points.all())  # Puanların toplamını döndürür
     def __str__(self):
         return self.username
+
 
 # Etkinlik Modeli
 class Event(models.Model):
