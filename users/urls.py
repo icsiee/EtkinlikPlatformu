@@ -42,7 +42,10 @@ urlpatterns = [
     path('dashboard/admin/dashboard/', admin_dashboard, name='admin_dashboard'),  # Admin paneli için doğru URL
     path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),
     path('create_user/', views.create_user, name='create_user'),
+    # Admin için etkinlik oluşturma
+    path('dashboard/admin/create-event/', views.admin_create_event, name='admin_create_event'),
 
+    # Etkinlik listesi
     # Diğer URL'ler...
     # Other paths for logout, etc.
 ]

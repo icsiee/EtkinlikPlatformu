@@ -332,14 +332,9 @@ def update_event(request, event_id):
     return render(request, 'users/update_event.html', {'form': form, 'event': event})
 
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from .forms import EventForm, CustomUserCreationForm, InterestForm
-from .models import Event
 
-from django.shortcuts import render, redirect, get_object_or_404
-from .forms import EventForm
-from .models import Event
+from .forms import EventForm, CustomUserCreationForm, InterestForm
+
 from django.contrib.auth.decorators import login_required
 
 @login_required  # Kullanıcının giriş yapmış olmasını zorunlu kılar
@@ -368,19 +363,7 @@ def create_event(request):
 
 
 
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .forms import EventForm
-from .models import Event
-
-
-
-
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from .forms import EventForm
-from .models import Event
-
 
 @login_required
 def user_event_map(request, event_id=None):
@@ -416,9 +399,6 @@ def user_event_map(request, event_id=None):
 
 
 
-
-
-from django.shortcuts import render, get_object_or_404
 from .models import User, Participant, Event
 
 
@@ -441,8 +421,6 @@ def user_detail(request, user_id):
 
 
 
-# views.py
-from django.shortcuts import render, redirect
 from .models import Interest
 
 # İlgi Alanlarını Listeleme
@@ -697,24 +675,38 @@ from .forms import EventForm
 def is_admin(user):
     return user.is_superuser
 
-@user_passes_test(is_admin)
+# Admin yetkisi kontrolü
+def is_admin(user):
+    return user.is_staff
+
+from django.shortcuts import render, redirect
+from .forms import EventForm
+from .models import Event
+from django.contrib.admin.views.decorators import staff_member_required
+
+@staff_member_required
 def admin_create_event(request):
-    """
-    Adminler için etkinlik oluşturma görünümü.
-    """
     if request.method == 'POST':
         form = EventForm(request.POST)
         if form.is_valid():
             event = form.save(commit=False)
             event.created_by = request.user  # Admin olarak etkinliği oluşturan
+            event.latitude = request.POST.get('latitude')
+            event.longitude = request.POST.get('longitude')
+
+            if event.latitude and event.longitude:
+                event.location = f"{event.latitude}, {event.longitude}"  # Konum bilgisini birleştir
+            else:
+                event.location = "Bilinmiyor"  # Coğrafi veri yoksa
+
             event.save()
-            return redirect('admin_dashboard')  # Admin dashboard'a yönlendirme
+
+            # Etkinlik başarıyla kaydedildikten sonra event_list sayfasına yönlendir
+            return redirect('event_list')  # event_list URL'sine yönlendirme
     else:
         form = EventForm()
 
     return render(request, 'admin_create_event.html', {'form': form})
-
-
 
 from django.contrib.auth.decorators import login_required
 
