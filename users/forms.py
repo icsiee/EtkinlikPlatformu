@@ -1,6 +1,5 @@
 from django import forms
 from .models import Event, User, Interest
-from .models import Message_ezgi
 
 
 class EventForm(forms.ModelForm):
@@ -9,7 +8,10 @@ class EventForm(forms.ModelForm):
         widget=forms.TimeInput(format='%H:%M', attrs={'type': 'time'}),
         required=False
     )
-
+    category = forms.ChoiceField(
+        choices=Event.CATEGORY_CHOICES,  # Kategori seçenekleri
+        widget=forms.Select(attrs={'class': 'form-control'}),  # Combobox için Select widget'ı
+    )
 
     class Meta:
         model = Event
@@ -35,6 +37,9 @@ class EventCreationForm(forms.ModelForm):
     )
 
 
+from django import forms
+from .models import User, Interest
+
 class CustomUserCreationForm(forms.ModelForm):
     interests = forms.ModelMultipleChoiceField(
         queryset=Interest.objects.all(),
@@ -58,20 +63,8 @@ class CustomUserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'password', 'name', 'surname', 'birth_date', 'gender', 'email', 'phone_number',
-                  'profile_picture', 'interests']
+        fields = ['username', 'password', 'name', 'surname', 'birth_date', 'gender', 'email', 'phone_number', 'profile_picture', 'interests']
 
-    def clean_username(self):
-        username = self.cleaned_data.get('username')
-        if User.objects.filter(username=username).exists():
-            raise forms.ValidationError("Bu kullanıcı adı zaten alınmış.")
-        return username
-
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError("Bu e-posta adresi zaten kullanılıyor.")
-        return email
 
 
 # users/forms.py
@@ -79,19 +72,4 @@ class InterestForm(forms.ModelForm):
     class Meta:
         model = Interest
         fields = ['name', 'description']
-
-class UsernameResetForm(forms.Form):
-    username = forms.CharField(max_length=150, label="Kullanıcı Adı")
-
-    def clean_username(self):
-        username = self.cleaned_data.get('username')
-        if not User.objects.filter(username=username).exists():
-            raise forms.ValidationError("Bu kullanıcı adı bulunamadı.")
-        return username
-
-class MessageForm(forms.ModelForm):
-    class Meta:
-        model = Message_ezgi
-        fields = ['content', 'event']
-
 
