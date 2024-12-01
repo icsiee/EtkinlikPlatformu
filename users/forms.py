@@ -1,5 +1,6 @@
 from django import forms
 from .models import Event, User, Interest
+from .models import Message
 
 
 class EventForm(forms.ModelForm):
@@ -81,4 +82,21 @@ class InterestForm(forms.ModelForm):
     class Meta:
         model = Interest
         fields = ['name', 'description']
+
+class UsernameResetForm(forms.Form):
+    username = forms.CharField(max_length=150, label="Kullanıcı Adı")
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if not User.objects.filter(username=username).exists():
+            raise forms.ValidationError("Bu kullanıcı adı bulunamadı.")
+        return username
+
+    class MessageForm(forms.ModelForm):
+        class Meta:
+            model = Message
+            fields = ['content']
+
+        content = forms.CharField(widget=forms.Textarea(attrs={'placeholder': 'Mesajınızı buraya yazın...'}))
+
 

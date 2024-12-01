@@ -96,8 +96,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',  # MySQL için
         'NAME': 'etkinlikdb',  # Veritabanı adı
-        'USER': 'root',  # MySQL kullanıcı adı
-        'PASSWORD': '1234',  # MySQL kullanıcı şifresi
+        'USER': 'ezgi',  # MySQL kullanıcı adı
+        'PASSWORD': 'Ke1994+-7645@',  # MySQL kullanıcı şifresi
         'HOST': 'localhost',  # Veritabanı sunucusunun adresi
         'PORT': '3306',  # MySQL varsayılan portu
     }

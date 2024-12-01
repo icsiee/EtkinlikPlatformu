@@ -1,17 +1,32 @@
-from django.contrib.auth import authenticate, login
-from .models import Event, Participant
-from django.contrib.auth import logout
-from .models import Event, User
+from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.models import User
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import User
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
+from .forms import CustomUserCreationForm
+
+from django.contrib.auth.views import PasswordResetView
+from .forms import UsernameResetForm
+
+
 User = get_user_model()
 
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from django.http import HttpResponseForbidden
+
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from django.http import HttpResponseForbidden
 
 @csrf_exempt
+
 # User login view
 def user_login(request):
     if request.method == 'POST':
@@ -34,6 +49,7 @@ def user_login(request):
     return render(request, 'login.html')  # Render the login page
 
 @csrf_exempt
+
 # Admin login view
 def admin_login(request):
     if request.method == 'POST':
@@ -48,12 +64,12 @@ def admin_login(request):
             return redirect('admin_dashboard')  # Redirect to admin dashboard
         elif user is not None and not user.is_superuser:  # Non-admin user trying to log in as admin
             messages.error(request, "Kullanıcı girişi sadece kullanıcı panelinde yapılabilir.")
-            return redirect('login')
+            return redirect('admin_login')
         else:
             messages.error(request, "Geçersiz kullanıcı adı veya şifre.")
-            return redirect('login')
+            return redirect('admin_login')
 
-    return render(request, 'login.html')  # Admin login page
+    return render(request, 'admin_login.html')  # Admin login page
 
 
 @csrf_exempt
@@ -92,27 +108,26 @@ def signup_view(request):
 @csrf_exempt
 def password_reset_view(request):
     if request.method == 'POST':
-        form = PasswordResetForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Parola sıfırlama talimatları gönderildi!")
-            return redirect('login')
+
+        username=request.POST.get("username")
+        password=request.POST.get("password")
+        print(username,password)
+        user=User.objects.filter(username=username).first()
+        print(user)
+        if user:
+            user.set_password(password)
+            user.save()
+        messages.success(request, "Parola sıfırlama talimatları gönderildi!")
+        return redirect('login')
     else:
         form = PasswordResetForm()
 
-    return render(request, 'users/password_reset.html', {'form': form})
+    return render(request, 'users/password_reset.html', )
 
 
-
-def join_event(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
-    user = request.user
-
-    # Kullanıcıyı etkinliğe katılanlar listesine ekle
-    if not Participant.objects.filter(user=user, event=event).exists():
-        Participant.objects.create(user=user, event=event)
-
-    return redirect('user_dashboard')  # Kullanıcıyı dashboard'a yönlendir
+@csrf_exempt
+def user_dashboard(request):
+    return render(request, 'user_dashboard.html')  # User dashboard ekranı
 
 
 @csrf_exempt
@@ -120,46 +135,29 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-
+from django.contrib.auth import logout
+from django.shortcuts import redirect
 @csrf_exempt
+
 def user_logout(request):
     logout(request)
     return redirect('user_login')  # Redirect to the login page after logout
 
 
 
-from django.shortcuts import render
-from .models import Event, Points
-from django.db import models
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserChangeForm
+from django.contrib import messages
 
 
-def user_dashboard(request):
-    user = request.user
 
-    # Kullanıcının oluşturduğu etkinlikler
-    created_events = Event.objects.filter(created_by=user)
-
-    # Kullanıcının katılabileceği etkinlikler
-    available_events = Event.objects.filter(status='approved').exclude(created_by=user)
-
-    # Kullanıcının puanını ve diğer bilgileri hesapla
-    total_points = Points.objects.filter(user=user).aggregate(total=models.Sum('score'))['total'] or 0
-    user_events_count = user.events.count()  # Katıldığı etkinlik sayısı
-    user_created_events_count = created_events.count()  # Oluşturduğu etkinlik sayısı
-
-    context = {
-        'created_events': created_events,
-        'available_events': available_events,
-        'total_points': total_points,
-        'user_events_count': user_events_count,
-        'user_created_events_count': user_created_events_count,
-    }
-
-    return render(request, 'users/user_dashboard.html', context)
-
-
+# Get the custom user model
+User = get_user_model()
 
 @csrf_exempt
+# Admin Dashboard View - Lists all users
 @login_required
 def admin_dashboard(request):
     if not request.user.is_staff:
@@ -167,279 +165,208 @@ def admin_dashboard(request):
     users = User.objects.all()
     return render(request, 'admin_dashboard.html', {'users': users})
 
-
-
-
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import User
-
-from django.db import IntegrityError
-
-
-from django.db import IntegrityError
-
 @csrf_exempt
+
+# Kullanıcı Düzenleme
+@login_required
 def edit_user(request, user_id):
+    if not request.user.is_staff:
+        return redirect('home')  # Eğer admin değilse, ana sayfaya yönlendir
+
     user = get_object_or_404(User, id=user_id)
 
     if request.method == 'POST':
-        new_username = request.POST.get('username')
-
-        # Kullanıcı adı değiştiyse, benzersiz olup olmadığını kontrol et
-        if new_username != user.username:
-            try:
-                User.objects.get(username=new_username)  # Aynı kullanıcı adı var mı kontrol et
-                return render(request, 'edit_user.html', {'user': user, 'error': 'Bu kullanıcı adı zaten alınmış.'})
-            except User.DoesNotExist:
-                pass  # Kullanıcı adı mevcut değilse geç
-
-        user.username = new_username
-        user.email = request.POST.get('email')
-        user.is_active = request.POST.get('is_active') == 'True'
-        user.phone_number = request.POST.get('phone_number')
-        user.birth_date = request.POST.get('birth_date')
-        user.gender = request.POST.get('gender')
-
-        # Profil resmini güncelle
-        if 'profile_picture' in request.FILES:
-            user.profile_picture = request.FILES['profile_picture']
-
-        try:
-            user.save()  # Kullanıcıyı kaydet
-        except IntegrityError:
-            return render(request, 'edit_user.html', {'user': user, 'error': 'Veritabanı hatası! Lütfen tekrar deneyin.'})
-
-        return redirect('admin_dashboard')  # Düzenlenen kullanıcı detayına yönlendirme
+        user.username = request.POST['username']
+        user.email = request.POST['email']
+        user.is_active = request.POST['is_active'] == 'True'
+        user.save()
+        return redirect('admin_dashboard')
 
     return render(request, 'edit_user.html', {'user': user})
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse
+from .models import Event
+from .forms import EventForm  # Assuming you will create a form for Event model
+from django.contrib.auth.decorators import login_required
 
+# View for listing all events
+# views.py
+from django.shortcuts import render, redirect
+from .models import Event
+from .forms import EventCreationForm
+
+# Etkinlik Listeleme View'i
 def event_list(request):
-    # Kullanıcının onay bekleyen etkinlikleri ve onaylanan etkinlikleri listelemesi
-    pending_events = Event.objects.filter(status='pending')
-    approved_events = Event.objects.filter(status='approved')
+    events = Event.objects.all()
+    return render(request, 'admin/event_list.html', {'events': events})
 
-    # Bu view'de sadece onaylı ve onay bekleyen etkinlikler listelenir
-    return render(request, 'admin/event_list.html', {
-        'pending_events': pending_events,
-        'approved_events': approved_events,
-    })
+# Etkinlik Ekleme/Düzenleme View'i
+from django.shortcuts import render, redirect
+from .forms import EventForm
+from django.contrib.auth.decorators import login_required
 
-def delete_event(request, event_id):
-    # Etkinliği silmek için bir fonksiyon
-    event = Event.objects.get(id=event_id)
-    if event.status == 'rejected':  # Eğer etkinlik reddedildiyse
-        event.delete()  # Etkinlik veritabanından silinir
-    return redirect('admin/event_list')  # Etkinlikler sayfasına yönlendirme
-
-
-
-def approve_event(request, event_id):
-    # Etkinliği al
-    event = Event.objects.get(id=event_id)
-
-    # Etkinliği onayla
-    event.status = 'approved'
-    event.save()
-
-    # Etkinliği oluşturan kullanıcıyı al
-    user = event.created_by
-
-    # Kullanıcı admin değilse puan ekle
-    if not user.is_admin:  # Admin kullanıcıyı kontrol et
-        points_entry = Points(user=user, score=15)
-        points_entry.save()
-
-
-    # Onay işleminden sonra etkinlik listesine yönlendir
-    return redirect('event_list')  # 'event_list' URL adı ile yönlendir
-
-
-def reject_event(request, event_id):
-    event = Event.objects.get(id=event_id)
-    event.status = 'rejected'
-    event.save()
-    return redirect('event_list')
-
-
-
-def edit_event(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
-
-    if request.method == 'POST':
-        form = EventForm(request.POST, instance=event)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Etkinlik başarıyla güncellendi!")
-            return redirect('event_list')
-    else:
-        form = EventForm(instance=event)
-
-    return render(request, 'events/edit_event.html', {'form': form, 'event': event})
-
-
-
-def delete_event(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
-    if request.method == 'POST':
-        event.delete()
-        messages.success(request, "Etkinlik başarıyla silindi!")
-        return redirect('event_list')
-
-    return render(request, 'events/delete_event.html', {'event': event})
-
-
-
-def create_event(request):
+@login_required  # Bu dekoratör, kullanıcının giriş yapmış olmasını zorunlu kılar
+def event_add(request):
     if request.method == 'POST':
         form = EventForm(request.POST)
         if form.is_valid():
-            event = form.save(commit=False)
-            event.created_by = request.user  # Etkinliği oluşturan kullanıcıyı ata
-            # Latitude ve longitude değerlerini formdan al
-            event.latitude = request.POST.get('latitude')
-            event.longitude = request.POST.get('longitude')
-            event.location = f"{event.latitude}, {event.longitude}"  # Konum bilgisini birleştir
-            event.save()
-            # Kullanıcıya başarı mesajı gönder
-            return redirect('event_list')  # Etkinlik listesi sayfasına yönlendir
+            event = form.save(commit=False)  # Etkinliği veritabanına kaydetmeden önce düzenleyelim
+            event.created_by = request.user  # Oturum açmış kullanıcıyı 'created_by' alanına ata
+            event.save()  # Etkinliği kaydet
+            return redirect('event_list')  # Etkinlik listesine yönlendirme yap
     else:
         form = EventForm()
-    return render(request, 'users/event_map.html', {'form': form})
-
-from django.shortcuts import render, get_object_or_404
-from .models import Event
-
-def event_detail(request, event_id):
-    # Belirtilen etkinliği al veya 404 döndür
-    event = get_object_or_404(Event, id=event_id)
-    return render(request, 'users/event_detail.html', {'event': event})
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from .models import Event
-# users/views.py
+    return render(request, 'events/event_add.html', {'form': form})
 
 
-def update_event(request, event_id):
-    # Etkinliği al, ancak yalnızca oluşturan kullanıcı erişebilsin
-    event = get_object_or_404(Event, id=event_id, created_by=request.user)
-
+# View for editing an event
+@login_required
+def event_edit(request, pk):
+    event = get_object_or_404(Event, pk=pk)
     if request.method == 'POST':
         form = EventForm(request.POST, instance=event)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Etkinlik başarıyla güncellendi!')
-            return redirect('user_dashboard')  # Güncelleme sonrası dashboard'a yönlendir
+            return redirect('event_list')  # Redirect after successful edit
     else:
         form = EventForm(instance=event)
+    return render(request, 'admin/event_form.html', {'form': form})
 
-    return render(request, 'users/update_event.html', {'form': form, 'event': event})
-
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from .forms import EventForm, CustomUserCreationForm, InterestForm
-from .models import Event
-
-
-def user_event_map(request, event_id=None):
-    """
-    Kullanıcılar için etkinlik ekleme veya düzenleme işlemleri.
-    Eğer event_id verilmişse düzenleme, verilmemişse yeni etkinlik oluşturma.
-    """
-    if event_id:
-        event = get_object_or_404(Event, id=event_id, created_by=request.user)
-        form = EventForm(request.POST or None, instance=event)
-    else:
-        event = None
-        form = EventForm(request.POST or None)
-
+# View for deleting an event
+@login_required
+def event_delete(request, pk):
+    event = get_object_or_404(Event, pk=pk)
     if request.method == 'POST':
-        if form.is_valid():
-            new_event = form.save(commit=False)
-            new_event.created_by = request.user
-
-            # Latitude ve longitude değerlerini formdan al
-            new_event.latitude = request.POST.get('latitude')
-            new_event.longitude = request.POST.get('longitude')
-            new_event.location = f"{new_event.latitude}, {new_event.longitude}"
-            new_event.save()
-
-
-            return redirect('user_dashboard')  # Kullanıcı dashboard'una yönlendirme
-
-    return render(request, 'users/user_event_map.html', {
-        'form': form,
-        'event': event
-    })
-
-
-from django.shortcuts import render, get_object_or_404
-from .models import User, Participant, Event
-
-
-def user_detail(request, user_id):
-    # Kullanıcıyı ID'ye göre buluyoruz
-    user = get_object_or_404(User, id=user_id)
-
-    # Kullanıcının katıldığı etkinlikleri alıyoruz
-    user_participations = Participant.objects.filter(user=user).select_related('event')
-
-    # Kullanıcının oluşturduğu etkinlikleri alıyoruz
-    created_events = Event.objects.filter(created_by=user)
-
-    # Kullanıcının katıldığı etkinliklerin detaylarını ve oluşturduğu etkinlikleri göndereceğiz
-    return render(request, 'user_detail.html', {
-        'user': user,
-        'user_participations': user_participations,
-        'created_events': created_events,
-    })
+        event.delete()
+        return redirect('event_list')  # Redirect after deletion
+    return render(request, 'admin/event_confirm_delete.html', {'event': event})
 
 # views.py
 from django.shortcuts import render, redirect
-from .models import Interest
+from .forms import EventCreationForm
 
-# İlgi Alanlarını Listeleme
-def user_interests(request):
-    interests = Interest.objects.all()  # Tüm ilgi alanlarını al
-    return render(request, 'user_interests.html', {'interests': interests})
-
-def add_interest(request):
+def create_event(request):
     if request.method == 'POST':
-        form = InterestForm(request.POST)
-        if form.is_valid():
-            form.save()  # Yeni ilgi alanı kaydet
-            return redirect('user_interests')  # İlgi alanları sayfasına yönlendir
-    else:
-        form = InterestForm()
-    return render(request, 'add_interest.html', {'form': form})
-
-
-def delete_interest(request, interest_id):
-    # İlgili ilgi alanını al
-    interest = get_object_or_404(Interest, id=interest_id)
-
-    # Silme işlemi
-    if request.method == 'POST':
-        interest.delete()
-        return redirect('user_interests')  # İlgi alanları sayfasına geri yönlendir
-
-    return render(request, 'user_interests.html', {'interest': interest})
-
-
-def edit_interest(request, interest_id):
-    interest = get_object_or_404(Interest, id=interest_id)
-
-    if request.method == 'POST':
-        form = InterestForm(request.POST, instance=interest)
+        form = EventCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('user_interests')  # Düzenleme sonrası ilgi alanları sayfasına yönlendir
+            return redirect('event_list')  # Başka bir sayfaya yönlendirebilirsiniz
     else:
-        form = InterestForm(instance=interest)
+        form = EventCreationForm()
+    return render(request, 'create_event.html', {'form': form})
 
-    return render(request, 'users/edit_interest.html', {'form': form})
+from django.shortcuts import render, redirect
+from .models import Event  # Event modelini import edin
+
+def event_create(request):
+    if request.method == "POST":
+        # Formdan gelen enlem ve boylam bilgilerini alın
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+
+        # Yeni etkinlik kaydını oluşturun
+        Event.objects.create(
+            title=request.POST.get('title'),  # Etkinlik başlığı gibi diğer form verileri
+            latitude=latitude,
+            longitude=longitude
+        )
+
+        return redirect('event_list')  # Etkinlikler listesine yönlendirme
+
+    return render(request, 'event_map.html')
+
+from django.shortcuts import render
+
+def select_event_location(request):
+    if request.method == "POST":
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+
+        # Veritabanına kaydetme işlemi burada yapılabilir
+        # Event.objects.create(latitude=latitude, longitude=longitude)
+
+        # Başka bir sayfaya yönlendirme (örneğin, etkinlik listeleme sayfası)
+        return redirect('event_list')
+
+    return render(request, 'events/select_event_location.html')
 
 
 
+@csrf_exempt
+def password_reset_view(request):
+    if request.method == 'POST':
+        form = UsernameResetForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            user = User.objects.get(username=username)
+
+            # Parola sıfırlama token'ı oluştur
+            token = default_token_generator.make_token(user)
+            uid = user.pk  # Kullanıcı ID'sini al
+
+            # Şifre sıfırlama bağlantısını oluştur
+            reset_url = f"{request.scheme}://{request.get_host()}/password_reset/{uid}/{token}/"
+
+            # Kullanıcıya e-posta gönder
+            send_mail(
+                'Parola Sıfırlama Talebi',
+                f'Parolanızı sıfırlamak için şu bağlantıya tıklayın: {reset_url}',
+                'no-reply@example.com',
+                [user.email],
+                fail_silently=False,
+            )
+
+            messages.success(request, "E-posta adresinize parola sıfırlama bağlantısı gönderildi.")
+            return redirect('login')  # Parola sıfırlama linki gönderildikten sonra login sayfasına yönlendir
+    else:
+        form = UsernameResetForm()
+    return render(request, 'users/password_reset.html', {'form': form})
+
+def password_reset_confirm_view(request, uidb64, token):
+    try:
+        # UID'yi ve token'ı çözümle
+        uid = uidb64
+        user = get_user_model().objects.get(pk=uid)
+
+        if default_token_generator.check_token(user, token):
+            if request.method == 'POST':
+                form = SetPasswordForm(user, request.POST)
+                if form.is_valid():
+                    form.save()
+                    return redirect('login')  # Parola başarıyla sıfırlandığında login sayfasına yönlendir
+            else:
+                form = SetPasswordForm(user)
+            return render(request, 'users/password_reset_confirm.html', {'form': form})
+        else:
+            messages.error(request, "Geçersiz veya süreli dolmuş parola sıfırlama bağlantısı.")
+            return redirect('password_reset')
+    except Exception as e:
+        messages.error(request, "Geçersiz kullanıcı veya token.")
+        return redirect('password_reset')
+
+
+from django.shortcuts import render, redirect
+from .models import Event, Message
+from .forms import MessageForm
+
+def event_detail(request, event_id):
+    event = Event.objects.get(id=event_id)
+    messages = Message.objects.filter(event=event).order_by('-created_at')
+
+    if request.method == 'POST':
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.event = event
+            message.user = request.user
+            message.save()
+            return redirect('event_detail', event_id=event.id)
+    else:
+        form = MessageForm()
+
+    return render(request, 'event_detail.html', {
+        'event': event,
+        'messages': messages,
+        'form': form,
+    })

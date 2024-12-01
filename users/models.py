@@ -118,3 +118,22 @@ class Points(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.score} points'
+
+
+class Event(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    date = models.DateTimeField()
+
+    def __str__(self):
+        return self.name
+
+class Message(models.Model):
+    event = models.ForeignKey(Event, related_name="messages", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name="messages", on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message from {self.user.username} on {self.event.name}"
+
