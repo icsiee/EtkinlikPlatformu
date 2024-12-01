@@ -760,4 +760,38 @@ def create_user(request):
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Event, Participant
+from .forms import UserEditForm
+
+
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        form = UserEditForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('user_dashboard')  # Başarılı bir şekilde kaydedildikten sonra dashboard'a yönlendir
+    else:
+        form = UserEditForm(instance=request.user)
+
+    return render(request, 'users/edit_profile.html', {'form': form})
+
+@login_required
+def leave_event(request, event_id):
+    # Katılımı bul
+    participant = get_object_or_404(Participant, user=request.user, event_id=event_id)
+
+    # Etkinlikten ayrıl
+    participant.delete()
+
+    # Kullanıcının puanını 10 azalt
+    points = Points.objects.filter(user=request.user).first()  # Kullanıcının puanlarını al
+    if points:
+        points.score -= 10  # Puanı 10 azalt
+        points.save()
+
+    # Kullanıcıya mesaj göster
+    messages.success(request, 'Etkinlikten başarıyla ayrıldınız ve puanınız 10 azaldı.')
+
+    # Dashboard sayfasına yönlendir
+    return redirect('user_dashboard')
 

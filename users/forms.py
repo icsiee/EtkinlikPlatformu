@@ -1,6 +1,14 @@
 from django import forms
 from .models import Event, User, Interest
 
+from django import forms
+from .models import User
+
+class UserEditForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['name', 'surname', 'email', 'birth_date', 'gender', 'phone_number', 'profile_picture', 'interests']
+
 
 class EventForm(forms.ModelForm):
     time = forms.TimeField(
