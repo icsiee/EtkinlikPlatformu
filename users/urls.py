@@ -21,7 +21,7 @@ urlpatterns = [
     path('event/create/', views.event_create, name='create_event'),
     path('select-location/', views.select_event_location, name='select_event_location'),
 
-    path('password_reset/', PasswordResetView.as_view(), name='password_reset'),
+    path('password_reset/', views.password_reset_view, name='password_reset'),
 
     path('event/<int:event_id>/', views.event_detail, name='event_detail'),
 

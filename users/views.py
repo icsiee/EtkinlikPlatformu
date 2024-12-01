@@ -127,7 +127,7 @@ def password_reset_view(request):
 
 @csrf_exempt
 def user_dashboard(request):
-    return render(request, 'user_dashboard.html')  # User dashboard ekranı
+    return render(request, 'users/user_dashboard.html')  # User dashboard ekranı
 
 
 @csrf_exempt
@@ -293,35 +293,6 @@ def select_event_location(request):
 
 
 
-@csrf_exempt
-def password_reset_view(request):
-    if request.method == 'POST':
-        form = UsernameResetForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            user = User.objects.get(username=username)
-
-            # Parola sıfırlama token'ı oluştur
-            token = default_token_generator.make_token(user)
-            uid = user.pk  # Kullanıcı ID'sini al
-
-            # Şifre sıfırlama bağlantısını oluştur
-            reset_url = f"{request.scheme}://{request.get_host()}/password_reset/{uid}/{token}/"
-
-            # Kullanıcıya e-posta gönder
-            send_mail(
-                'Parola Sıfırlama Talebi',
-                f'Parolanızı sıfırlamak için şu bağlantıya tıklayın: {reset_url}',
-                'no-reply@example.com',
-                [user.email],
-                fail_silently=False,
-            )
-
-            messages.success(request, "E-posta adresinize parola sıfırlama bağlantısı gönderildi.")
-            return redirect('login')  # Parola sıfırlama linki gönderildikten sonra login sayfasına yönlendir
-    else:
-        form = UsernameResetForm()
-    return render(request, 'users/password_reset.html', {'form': form})
 
 def password_reset_confirm_view(request, uidb64, token):
     try:

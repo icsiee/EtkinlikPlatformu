@@ -120,7 +120,7 @@ class Points(models.Model):
         return f'{self.user.username} - {self.score} points'
 
 
-class Event(models.Model):
+class Event_ezgi(models.Model):
     name = models.CharField(max_length=255)  # Etkinlik adı
     description = models.TextField()  # Etkinlik açıklaması
     duration = models.IntegerField()  # Süre (örneğin dakika olarak)
@@ -140,7 +140,7 @@ class Event(models.Model):
         return self.name
 
 
-class Message(models.Model):
+class Message_ezgi(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='messages')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()

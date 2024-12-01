@@ -1,6 +1,6 @@
 from django import forms
 from .models import Event, User, Interest
-from .models import Message
+from .models import Message_ezgi
 
 
 class EventForm(forms.ModelForm):
@@ -89,9 +89,9 @@ class UsernameResetForm(forms.Form):
             raise forms.ValidationError("Bu kullanıcı adı bulunamadı.")
         return username
 
-    class MessageForm(forms.ModelForm):
-        class Meta:
-            model = Message
-            fields = ['content', 'event']
+class MessageForm(forms.ModelForm):
+    class Meta:
+        model = Message_ezgi
+        fields = ['content', 'event']
 
 
