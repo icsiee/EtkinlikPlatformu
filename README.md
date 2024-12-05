@@ -69,9 +69,10 @@ Projede ilişkisel bir veritabanı kullanılmıştır. Tablolar şu şekilde tas
 
 
 ### Görseller:
-  - `![Ekran Görüntüsü](images/Ekran%20görüntüsü%202024-12-05%20171719.png)`
-  - `![Opera Anlık Görüntü](images/Opera%20Anlık%20Görüntü_2024-12-05_173637_127.0.0.1.png)`
-  
+![Opera Anlık Görüntü_2024-12-05_173637_127 0 0 1](https://github.com/user-attachments/assets/98c6d898-8470-401e-b0ab-7d0309ea5e59)
+
+![Ekran görüntüsü 2024-12-05 171719](https://github.com/user-attachments/assets/80d25a09-d728-4a49-a75e-7494428e09ba)
+
 
 ### Kurulum Adımları
 - **Depoyu Klonlama** adımındaki bağlantıyı şu şekilde güncelledim:
