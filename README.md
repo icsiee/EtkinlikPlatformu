@@ -75,7 +75,7 @@ Projede ilişkisel bir veritabanı kullanılmıştır. Tablolar şu şekilde tas
 
 
 ### Kurulum Adımları
-- **Depoyu Klonlama** adımındaki bağlantıyı şu şekilde güncelledim:
+- **Depoyu Klonlama** 
   ```bash
   git clone https://github.com/icsiee/EtkinlikPlatformu.git
   cd EtkinlikPlatformu
